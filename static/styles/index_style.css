@@ -1,0 +1,110 @@
+/* Import some non-default fonts (Google Fonts as example) */
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Saira:ital,wght@0,100..900;1,100..900&display=swap");
+
+/* Fonts */
+
+.saira-regular {
+  font-family: "Saira", sans-serif;
+  font-optical-sizing: auto;  /* lets the browser adjust the font */
+  font-weight: 400;           /* replace <weight> with actual number */
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
+}
+
+.saira-bold {
+    font-family: "Saira", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 1500;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+}
+
+html{
+    scroll-behavior: smooth;
+}
+
+/* Reset body */
+body {
+    margin: 0;
+    font-family: sans-serif;
+    color: white;
+    display: block !important;
+    flex-direction: column !important;
+}
+
+.hero {
+    height: 100vh;  /* full screen */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background: url("../images/432A1345.jpg") no-repeat center center fixed;
+    background-size: cover;
+    text-align: center;
+}
+
+.svg-mountains {
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    z-index: 1;
+    display: block;
+    color: #121212;
+}
+
+/* Container centers everything */
+.container {
+    text-align: center;
+}
+
+/* Title styling */
+.title {
+    font-size: 9vw;
+    line-height: 1;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Play button */
+.play-btn {
+    text-decoration: none;
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    background: #1c1c1f;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.play-btn:hover {
+    background: #121212;
+}
+
+.info {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #121212;
+  flex-direction: column; /* ADD THIS LINE */
+  padding: 20px; /* ADD THIS LINE */
+}
+
+.text-box {
+    max-width: 600px;
+    margin: 40px;
+    padding: 30px;
+    background: rgba(50, 50, 50, 0.4);
+    border-radius: 20px;
+    color: white;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    text-align: center;
+}
+

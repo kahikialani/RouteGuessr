@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROUTEGUESSR</title>
+    <link href="{{ url_for('static', filename='styles/index_style.css')}}" rel="stylesheet"/>
+</head>
+<body>
+    <!-- Hero Section - should take full screen -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="title">
+                <span class="letter saira-bold">ROUTEGUESSR</span>
+            </h1>
+            <a href="#play" class="play-btn">PLAY</a>
+        </div>
+        <svg class="svg-mountains" viewBox="0 0 1400 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,120 L0,40 L20,42 L40,38 L60,45 L80,41 L100,48 L120,52 L140,49 L160,55 L180,58 L200,62 L220,59 L240,65 L260,68 L280,72 L300,75 L320,78 L340,82 L360,85 L380,88 L400,90 L420,87 L440,84 L460,81 L480,78 L500,82 L520,79 L540,76 L560,73 L580,70 L600,74 L620,71 L640,68 L660,72 L680,69 L700,66 L720,63 L740,67 L760,64 L780,61 L800,58 L820,55 L840,45 L860,35 L880,30 L900,25 L920,28 L940,32 L960,35 L980,40 L1000,45 L1020,50 L1040,55 L1060,58 L1080,62 L1100,65 L1120,68 L1140,72 L1160,69 L1180,66 L1200,70 L1220,74 L1240,77 L1260,80 L1280,83 L1300,86 L1320,89 L1340,87 L1360,85 L1380,88 L1400,90 L1400,120 L0,120 Z"
+                  fill="#121212"/>
+        </svg>
+    </section>
+
+    <!-- Info Section - should be below, requiring scroll -->
+    <section class="info" id="play">
+        <div class="text-box">
+            <h2 class="saira-bold">Test Your Route Knowledge</h2>
+            <p>Can you guess the climbing area from just a photo?</p>
+        </div>
+    </section>
+<script>
+        function toggleMethod(method) {
+            const cssDiv = document.getElementById('css-mountains');
+            const svgDiv = document.getElementById('svg-mountains');
+            const cssBtn = document.getElementById('css-btn');
+            const svgBtn = document.getElementById('svg-btn');
+
+            if (method === 'css') {
+                cssDiv.style.display = 'block';
+                svgDiv.style.display = 'none';
+                cssBtn.classList.add('active');
+                svgBtn.classList.remove('active');
+            } else {
+                cssDiv.style.display = 'none';
+                svgDiv.style.display = 'block';
+                cssBtn.classList.remove('active');
+                svgBtn.classList.add('active');
+            }
+        }
+    </script>
+
+</body>
+</html>
