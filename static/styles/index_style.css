@@ -1,12 +1,9 @@
-/* Import some non-default fonts (Google Fonts as example) */
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Saira:ital,wght@0,100..900;1,100..900&display=swap");
-
-/* Fonts */
 
 .saira-regular {
   font-family: "Saira", sans-serif;
-  font-optical-sizing: auto;  /* lets the browser adjust the font */
-  font-weight: 400;           /* replace <weight> with actual number */
+  font-optical-sizing: auto;
+  font-weight: 400;
   font-style: normal;
   font-variation-settings: "wdth" 100;
 }
@@ -23,7 +20,6 @@ html{
     scroll-behavior: smooth;
 }
 
-/* Reset body */
 body {
     margin: 0;
     font-family: sans-serif;
@@ -33,7 +29,7 @@ body {
 }
 
 .hero {
-    height: 100vh;  /* full screen */
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -54,12 +50,10 @@ body {
     color: #121212;
 }
 
-/* Container centers everything */
 .container {
     text-align: center;
 }
 
-/* Title styling */
 .title {
     font-size: 9vw;
     line-height: 1;
@@ -68,7 +62,6 @@ body {
     justify-content: center;
 }
 
-/* Play button */
 .play-btn {
     text-decoration: none;
     padding: 12px 30px;
@@ -92,15 +85,16 @@ body {
   justify-content: center;
   align-items: center;
   background: #121212;
-  flex-direction: column; /* ADD THIS LINE */
-  padding: 20px; /* ADD THIS LINE */
+  background-size: cover;
+  flex-direction: column;
+  padding: 10px;
 }
 
 .text-box {
-    max-width: 600px;
+    max-width: 1000px;
     margin: 40px;
-    padding: 30px;
-    background: rgba(50, 50, 50, 0.4);
+    padding: 30px 30px;
+    background: #292929;
     border-radius: 20px;
     color: white;
     font-size: 1.2rem;
@@ -108,3 +102,132 @@ body {
     text-align: center;
 }
 
+
+
+#container {
+    width: 100%;
+    padding: 0.5rem 0;
+    font-family: Montserrat;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    background: #292929;
+    color: #292929;
+}
+
+#container .scroll {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: fit-content;
+    white-space: nowrap;
+    animation: loop 45s linear infinite;
+}
+
+.fade {
+    width: 100%;
+    position: absolute;
+    background: linear-gradient(
+        90deg,
+        #292929,
+        transparent 10%,
+        transparent 90%,
+        #292929
+    );
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes loop {
+    0% {transform: translateX(0%);}
+    100% {transform: translateX(-50%);}
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    gap: 0 0.2rem;
+    color: #e2e8f0;
+    font-size: .9rem;
+    background-color: rgba(50, 50, 50, 0.4);
+    padding: 0.7rem 1rem;
+    margin: 0rem 1rem;
+    border-radius: 10px;
+    white-space: nowrap;
+    border:1px solid;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.item:hover {
+    background-color: rgba(70, 70, 70, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.submit-section {
+    margin-top: 0.5rem;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+.submit-form {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+.submit-input {
+    flex: 1;
+    width: 100%;
+    padding: 1rem;
+    font-size: 0.7rem;
+    border: none;
+    border-radius: 12px;
+    background: #1a1a1a;
+    color: white;
+    border: 1px solid;
+    transition: all 0.3s ease;
+    font-family: Montserrat;
+}
+
+.submit-input:focus {
+    outline: none;
+    border-color: #091b2b;
+    background: #222;
+    box-shadow: 0 0 0 3px rgba(9, 27, 43, 0.2);
+}
+
+.submit-input::placeholder {
+    color: #666;
+}
+
+.submit-button {
+    flex-shrink: 0;
+    min-width: 140px;
+    padding: 1rem 2rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    background: #091b2b;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: Montserrat;
+}
+
+.submit-button:hover {
+    background: #0a2035;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(9, 27, 43, 0.3);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}

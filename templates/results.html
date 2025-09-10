@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROUTE-GUESSR</title>
-    <link href="{{ url_for('static', filename='styles/play_style.css')}}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='styles/results_style.css')}}" rel="stylesheet"/>
 </head>
 <body>
     <section class = "back">
         <div class = "text-box">
-            <p> Scraping Route Data...</p>
+            <p> Route Found!</p>
+            <img src = "{{ imageurl }}" >
+            <p>{{ page }}</p>
         </div>
     </section>
 </body>

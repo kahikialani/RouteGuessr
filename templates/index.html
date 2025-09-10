@@ -7,7 +7,6 @@
     <link href="{{ url_for('static', filename='styles/index_style.css')}}" rel="stylesheet"/>
 </head>
 <body>
-    <!-- Hero Section - should take full screen -->
     <section class="hero">
         <div class="container">
             <h1 class="title">
@@ -20,15 +19,38 @@
                   fill="#121212"/>
         </svg>
     </section>
-
-    <!-- Info Section - should be below, requiring scroll -->
     <section class="info" id="play">
         <div class="text-box">
-            <h2 class="saira-bold">Test Your Route Knowledge</h2>
-            <p>Can you guess the climbing area from just a photo?</p>
+            <h2 class="saira-bold">Select an Area</h2>
+            <div id = "container">
+                <div class = 'scroll' id = "scroll-one">
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105851693/the-needles">The Needles</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105744246/eldorado-canyon-state-park">Eldorado Canyon</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/106064825/bishop-area">Bishop Area</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105833388/yosemite-valley">Yosemite Valley</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105720495/joshua-tree-national-park">Joshua Tree</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105833384/tuolumne-meadows">Tuolumne Meadows</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105791817/high-sierra">High Sierras</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105731932/red-rocks">Red Rocks</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105798291/lake-tahoe">Lake Tahoe</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105716763/indian-creek">Indian Creek</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105798170/squamish">Squamish</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105788020/tahquitz-suicide-rocks">Tahquitz & Suicide</div>
+                    <div class = 'item' data-url = "https://www.mountainproject.com/area/105819641/ten-sleep-canyon">Ten Sleep Canyon</div>
+                </div>
+                <div class = 'fade'></div>
+                <p> Or paste your own area link!</p>
+                <div class = "submit-section">
+                    <form action = "/area" class = "submit-form">
+                        <input type = "text" name = "area" id = "area" placeholder = "Enter MP Area link" class = "submit-input"/>
+                        <button type = "submit" class = "submit-button">Submit Link</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </section>
-<script>
+
+    <script>
         function toggleMethod(method) {
             const cssDiv = document.getElementById('css-mountains');
             const svgDiv = document.getElementById('svg-mountains');
@@ -47,7 +69,18 @@
                 svgBtn.classList.add('active');
             }
         }
-    </script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const items = document.querySelectorAll('.item');
 
+            items.forEach(item => {
+                item.addEventListener('click', function() {
+                    const areaURL = this.dataset.url;
+                    if (areaURL) {
+                        window.location.href = `/area?area=${encodeURIComponent(areaURL)}`;
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

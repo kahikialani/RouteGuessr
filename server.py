@@ -9,19 +9,19 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-@app.route('/route')
-def find_route():
-    area = request.args.get('route')
+@app.route('/area')
+def area_to_route():
+    area = request.args.get('area')
     route_data = FindRandomRoute().get_area(area)
-    return render_template("routes.html",
+    return render_template("results.html",
                            imageurl = route_data[0],
-                           location = route_data[2],
-                           page = route_data[1])
+                           page = route_data[1],
+                           location = route_data[2])
 
-@app.route('/play')
-def play():
-    return render_template('play.html')
+@app.route('/results')
+def results_noargs():
+    return render_template('no_results.html')
 
 if __name__ == '__main__':
     print('init')
-    serve(app, host = "0.0.0.0", port = 8000)
+    serve(app, host = "0.0.0.0", port = 4036)
