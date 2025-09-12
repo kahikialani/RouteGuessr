@@ -4,10 +4,16 @@ from waitress import serve
 import threading
 import uuid
 import logging
-from dotenv import load_dotenv
 import os
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("Loaded .env file for local development")
+except ImportError:
+    print("python-dotenv not available (production environment)")
+    pass
+
 api_key = os.getenv("MAPS_API_KEY")
 
 app = Flask(__name__)
