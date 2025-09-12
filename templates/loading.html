@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loading...</title>
+    <link href="{{ url_for('static', filename='styles/loading_style.css')}}" rel="stylesheet"/>
+</head>
+<body>
+    <div class="back">
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <div class="loading-text">Finding your route</div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <div id="error-message" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
+    <script>
+        const operationId = "{{ operation_id }}";
+        let checkCount = 0;
+
+        function updateProgress() {
+            checkCount++;
+            const progressFill = document.querySelector('.progress-fill');
+            const progress = Math.min(checkCount * 8, 90); // Cap at 90% until complete
+            progressFill.style.width = progress + '%';
+        }
+
+        function checkStatus() {
+            fetch(`/check_status/${operationId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'complete') {
+                        // Complete the progress bar
+                        document.querySelector('.progress-fill').style.width = '100%';
+                        document.querySelector('.loading-text').textContent = 'Route found! Redirecting';
+
+                        // Small delay to show completion
+                        setTimeout(() => {
+                            window.location.href = `/results/${operationId}`;
+                        }, 500);
+                    } else if (data.status === 'error') {
+                        // Show error message
+                        document.querySelector('.loading-text').style.display = 'none';
+                        document.querySelector('.spinner').style.display = 'none';
+                        document.querySelector('.progress-bar').style.display = 'none';
+                        document.getElementById('error-message').textContent = 'Error: ' + data.error;
+                        document.getElementById('error-message').style.display = 'block';
+                    } else {
+                        // Still processing
+                        updateProgress();
+                        setTimeout(checkStatus, 1000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking status:', error);
+                    document.querySelector('.loading-text').textContent = 'Something went wrong...';
+                    document.querySelector('.progress-bar').style.display = 'none';
+                });
+        }
+
+        checkStatus();
+    </script>
+</body>
+</html>
