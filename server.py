@@ -4,7 +4,11 @@ from waitress import serve
 import threading
 import uuid
 import logging
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+api_key = os.getenv("MAPS_API_KEY")
 
 app = Flask(__name__)
 app.secret_key = 'random.uniform(0.0, 100.0)'
@@ -80,7 +84,8 @@ def results(operation_id):
                                area_lon = data['area_lon'],
                                route_lat = data['route_lat'],
                                route_lon = data['route_lon'],
-                               location = str(data['route_lat'] + data['area_lon']))
+                               location = str(data['route_lat'] + data['area_lon']),
+                               maps_key = api_key)
     elif f'results_{operation_id}' in session:
         data = session[f'results_{operation_id}']
         return render_template('results.html',
@@ -92,7 +97,8 @@ def results(operation_id):
                                area_lon = data['area_lon'],
                                route_lat = data['route_lat'],
                                route_lon = data['route_lon'],
-                               location = str(data['route_lat'] + data['area_lon']))
+                               location = str(data['route_lat'] + data['area_lon']),
+                               maps_key = api_key)
     else:
         return render_template('routes.html')
 
