@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import random
 import logging
+from geopy.distance import geodesic
 
 class FindRandomRoute:
     def __init__(self):
@@ -103,6 +104,27 @@ class FindRandomRoute:
             return self.data
         else:
             return self.get_area(self.data['starting_url'])
+
+class Calculations:
+    def __init__(self):
+        self.user_data = {
+            'user_lat' : None,
+            'user_lon' : None
+        }
+        self.route_data = {
+            'route_lat' : None,
+            'route_lon' : None
+        }
+    def distance_finder(self, user_coords, route_coords):
+        user_coords_list = [user_coords['user_lat'],user_coords['user_lon']]
+        route_coords_list = [route_coords['route_lat'],route_coords['route_lon']]
+        distance = geodesic(user_coords_list, route_coords_list)
+        logging.debug(f"user_coords: {user_coords_list}, route_coords: {route_coords_list}")
+        return f'{distance.km:.2f}'
+        #if distance.m > 1000:
+            #return distance.km
+        #else:
+            #return distance.m
 
 
 

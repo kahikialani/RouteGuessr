@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request, jsonify, session
-from route import FindRandomRoute
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from route import FindRandomRoute, Calculations
 from waitress import serve
 import threading
 import uuid
@@ -17,12 +17,13 @@ except ImportError:
 api_key = os.getenv("MAPS_API_KEY")
 
 app = Flask(__name__)
-app.secret_key = 'random.uniform(0.0, 100.0)'
+app.secret_key = 'secret_secret'
 operations = {}
 
 @app.route('/')
 @app.route('/index')
 def index():
+    session.clear()
     return render_template('index.html')
 
 @app.route('/area')
@@ -75,13 +76,23 @@ def check_status(operation_id):
     else:
         return jsonify({'status': 'not_found', 'data': None, 'error': 'Operation not found'})
 
-@app.route('/results/<operation_id>')
-def results(operation_id):
+@app.route('/route/<operation_id>', methods = ["POST", "GET"])
+def route(operation_id):
+    session_key = f"route_{operation_id}"
     if operation_id in operations and operations[operation_id]['status'] == 'complete':
         data = operations[operation_id]['data']
-        session[f'results_{operation_id}'] = data
-        del operations[operation_id]
-        return render_template('results.html',
+        if session_key not in session:
+            session[session_key] = data
+            del operations[operation_id]
+        else:
+            existing_data = session[session_key]
+            for key, value in data.items():
+                if key not in existing_data:
+                    existing_data[key] = value
+            session[session_key] = existing_data
+            del operations[operation_id]
+        data = session[session_key]
+        return render_template('route.html',
                                image_url = data['image_url'],
                                route_url = data['route_url'],
                                area_name = data['area_name'],
@@ -91,10 +102,11 @@ def results(operation_id):
                                route_lat = data['route_lat'],
                                route_lon = data['route_lon'],
                                location = str(data['route_lat'] + data['area_lon']),
-                               maps_key = api_key)
-    elif f'results_{operation_id}' in session:
-        data = session[f'results_{operation_id}']
-        return render_template('results.html',
+                               maps_key = api_key,
+                               operation_id=operation_id)
+    elif session_key in session:
+        data = session[session_key]
+        return render_template('route.html',
                                image_url = data['image_url'],
                                route_url = data['route_url'],
                                area_name = data['area_name'],
@@ -104,22 +116,64 @@ def results(operation_id):
                                route_lat = data['route_lat'],
                                route_lon = data['route_lon'],
                                location = str(data['route_lat'] + data['area_lon']),
-                               maps_key = api_key)
+                               maps_key = api_key,
+                               operation_id=operation_id)
     else:
-        return render_template('routes.html')
-
-@app.route('/results')
-def results_noargs():
-    return render_template('routes.html')
+        return redirect(url_for('index'))
 
 
 
-@app.route('/submit_guess', methods = ['POST'])
-def submit_guess():
-    data = request.get_json()
-    user_lat = data['lat']
-    user_lng = data['lng']
-    return jsonify({'status':'success'})
+@app.route('/submit-guess/<operation_id>', methods=['POST'])
+def submit_guess(operation_id):
+    try:
+        session_key = f"route_{operation_id}"
+        if session_key not in session:
+            logging.error(f"No session data found for {session_key}")
+            return redirect(url_for('index'))
+        user_lat = float(request.form['lat'])
+        user_lon = float(request.form['lng'])
+        route_data = session[session_key].copy()
+        route_data['user_lat'] = user_lat
+        route_data['user_lon'] = user_lon
+        session[session_key] = route_data
+        session.modified = True
+        return redirect(url_for('single_result', operation_id = operation_id))
+    except Exception as e:
+        logging.error(f"Error in submit_guess: {str(e)}")
+        return redirect(url_for('index'))
+
+@app.route('/single-result/<operation_id>')
+def single_result(operation_id):
+    session_key = f"route_{operation_id}"
+
+    if session_key in session:
+        data = session[session_key]
+        logging.debug(f'Found session data with keys: {list(data.keys())}')
+        user_coords = {
+            'user_lat': session[f'route_{operation_id}']['user_lat'],
+            'user_lon': session[f'route_{operation_id}']['user_lon']
+        }
+        route_coords = {
+            'route_lat': session[f'route_{operation_id}']['route_lat'],
+            'route_lon': session[f'route_{operation_id}']['route_lon']
+        }
+
+        data = session[f'route_{operation_id}']
+        return render_template('single_result.html',
+                               image_url=data['image_url'],
+                               route_url=data['route_url'],
+                               area_name=data['area_name'],
+                               route_name=data['route_name'],
+                               area_lat=data['area_lat'],
+                               area_lon=data['area_lon'],
+                               route_lat=data['route_lat'],
+                               route_lon=data['route_lon'],
+                               user_lat=data['user_lat'],
+                               user_lon=data['user_lon'],
+                               maps_key=api_key,
+                               operation_id=operation_id)
+    else:
+        return redirect(url_for('index'))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

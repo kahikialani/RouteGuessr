@@ -8,7 +8,7 @@
     <div class="back">
         <div class="loading-container">
             <div class="spinner"></div>
-            <div class="loading-text">Finding your route</div>
+            <div class="loading-text">Finding Route Data...</div>
             <div class="progress-bar">
                 <div class="progress-fill"></div>
             </div>
@@ -37,7 +37,7 @@
 
                         // Small delay to show completion
                         setTimeout(() => {
-                            window.location.href = `/results/${operationId}`;
+                            window.location.href = `/route/${operationId}`;
                         }, 500);
                     } else if (data.status === 'error') {
                         // Show error message
