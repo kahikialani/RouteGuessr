@@ -120,11 +120,7 @@ class Calculations:
         route_coords_list = [route_coords['route_lat'],route_coords['route_lon']]
         distance = geodesic(user_coords_list, route_coords_list)
         logging.debug(f"user_coords: {user_coords_list}, route_coords: {route_coords_list}")
-        return f'{distance.km:.2f}'
-        #if distance.m > 1000:
-            #return distance.km
-        #else:
-            #return distance.m
+        return distance.km
 
 
 
