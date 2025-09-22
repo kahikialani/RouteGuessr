@@ -56,12 +56,12 @@
     function initMap() {
         const mapOptions = {
             center: { lat: {{ area_lat }}, lng: {{ area_lon }} },
-            zoom: 11,
+            zoom: 12,
             streetViewControl: false,
             rotateControl: false,
             fullscreenControl: true,
             clickableIcons: false,
-            mapTypeId: google.maps.MapTypeId.HYBRID
+            mapTypeId: google.maps.MapTypeId.TERRAIN
         };
 
         map = new google.maps.Map(document.getElementById('map'), mapOptions);
