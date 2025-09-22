@@ -157,6 +157,36 @@ def single_result(operation_id):
             'route_lat': session[f'route_{operation_id}']['route_lat'],
             'route_lon': session[f'route_{operation_id}']['route_lon']
         }
+        avg_coords = {
+            'avg_lat': (user_coords['user_lat'] + route_coords['route_lat'])/2,
+            'avg_lon': (user_coords['user_lon'] + route_coords['route_lon'])/2
+        }
+
+        calculator = Calculations()
+        distance = calculator.distance_finder(user_coords, route_coords)
+        zoom_level = 12
+        if distance < 0.8:
+            zoom_level = 17
+        if distance < 1.0:
+            zoom_level = 16
+        elif distance < 3:
+            zoom_level = 14
+        elif distance < 5:
+            zoom_level = 13
+        elif distance < 10:
+            zoom_level = 13
+        elif distance < 20:
+            zoom_level = 12
+        elif distance < 40:
+            zoom_level = 11
+        elif distance < 80:
+            zoom_level = 10
+        elif distance < 150:
+            zoom_level = 8
+        else:
+            zoom_level = 4
+        logging.debug(f"zoom_level: {zoom_level}")
+        logging.debug(f"distance: {distance}")
 
         data = session[f'route_{operation_id}']
         return render_template('single_result.html',
@@ -170,8 +200,12 @@ def single_result(operation_id):
                                route_lon=data['route_lon'],
                                user_lat=data['user_lat'],
                                user_lon=data['user_lon'],
+                               avg_lat=avg_coords['avg_lat'],
+                               avg_lon=avg_coords['avg_lon'],
                                maps_key=api_key,
-                               operation_id=operation_id)
+                               operation_id=operation_id,
+                               zoom_level=zoom_level,
+                               distance=distance)
     else:
         return redirect(url_for('index'))
 
