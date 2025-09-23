@@ -164,6 +164,7 @@ def single_result(operation_id):
 
         calculator = Calculations()
         distance = calculator.distance_finder(user_coords, route_coords)
+        score = calculator.find_score(distance)
         zoom_level = 12
         if distance < 0.8:
             zoom_level = 17
@@ -187,6 +188,7 @@ def single_result(operation_id):
             zoom_level = 4
         logging.debug(f"zoom_level: {zoom_level}")
         logging.debug(f"distance: {distance}")
+        logging.debug(f"score: {score}")
 
         data = session[f'route_{operation_id}']
         return render_template('single_result.html',

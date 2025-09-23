@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import random
 import logging
+import math
 from geopy.distance import geodesic
 
 class FindRandomRoute:
@@ -121,6 +122,12 @@ class Calculations:
         distance = geodesic(user_coords_list, route_coords_list)
         logging.debug(f"user_coords: {user_coords_list}, route_coords: {route_coords_list}")
         return distance.km
+
+    def find_score(self, distance):
+        score = 5000 * (math.e **  (-10 * distance / 30))
+        if score >= 4990:
+            score = 5000
+        return score
 
 
 
