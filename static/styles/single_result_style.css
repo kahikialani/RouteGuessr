@@ -1,9 +1,50 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Saira:ital,wght@0,100..900;1,100..900&display=swap");
+
+.saira-regular {
+  font-family: "Saira", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
+}
+
+.saira-bold {
+    font-family: "Saira", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+}
+
 body {
     margin: 0;
     font-family: sans-serif;
     color: white;
     display: block !important;
     flex-direction: column !important;
+}
+
+.logo-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.logo-link {
+    text-decoration: none;
+    display: block;
+}
+
+.logo {
+    height: 50px;
+    width: auto;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.logo:hover {
+    opacity: 0.8;
 }
 
 .back {
@@ -31,7 +72,7 @@ body {
     color: white;
     font-size: 1.2rem;
     line-height: 1.6;
-    border: 1px solid;
+    border: 1px solid #8a8888;
 }
 
 .content-container {
@@ -65,7 +106,64 @@ body {
 .map-container {
     width: 850px;
     flex-shrink: 0;
+    padding: 0;
 }
+
+.route-info-box {
+    background: rgb(28, 28, 31, 0.7);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    border-radius: 10px;
+    border: 2px solid #242323;
+    margin-bottom: 20px;
+    padding: 15px 0;
+}
+
+.route-name {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    font-family: "Saira", sans-serif;
+    font-size: 2.5rem;
+    padding-left: 20px;
+    margin: 0;
+    line-height: 1;
+}
+
+.route-name a {
+    color: white;
+    text-decoration: none;
+}
+
+.route-name a:hover {
+    text-decoration: underline;
+    opacity: 0.8;
+}
+
+
+.route-grade {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    font-family: "Saira", sans-serif;
+    padding-left: 20px;
+    margin-top: 10px;
+    font-size: 1.5rem;
+    margin-bottom: 0;
+    line-height: 1;
+}
+
+.route-type {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    font-family: "Saira", sans-serif;
+    padding-left: 20px;
+    font-size: 1.5rem;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
 
 .map-box {
     background: #1c1c1f;
@@ -74,19 +172,11 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.map-title {
-    color: #333;
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
 #map {
-    height: 600px;
+    height: 475px;
     width: 100%;
     border-radius: 10px;
-    border: 2px solid #ddd;
+    border: 2px solid #242323;
 }
 
 .score-box {
@@ -101,5 +191,42 @@ body {
     color: white;
     font-size: 1.2rem;
     line-height: 1.6;
-    border: 1px solid;
+    border: 1px solid #8a8888;
+}
+
+.score-bar-container {
+    position: relative;
+    width: 100%;
+    height: 30px;
+    background-color: rgba(100, 100, 100, 0.3);
+    border-radius: 15px;
+    margin: 15px 0;
+    overflow: hidden;
+}
+
+.score-bar {
+    height: 100%;
+    background: linear-gradient(135deg, #0055b3, #0062cc);;
+    border-radius: 15px;
+    transition: width 0.8s ease-in-out;
+    min-width: 0;
+}
+
+.score-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    z-index: 1;
+}
+
+.distance-text {
+    align-content: center;
+    color: white;
+    margin-top: -10px;
+    margin-bottom: 5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }

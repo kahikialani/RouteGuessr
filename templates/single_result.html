@@ -8,6 +8,11 @@
     <link rel="icon" type="image/png" href="../static/images/ROUTEGUESSR.png">
 </head>
 <body>
+    <div class="logo-container">
+        <a href="/" class="logo-link">
+            <img src="{{ url_for('static', filename='../static/images/ROUTEGUESSR.png') }}" alt="RouteGuessr Logo" class="logo">
+        </a>
+    </div>
     <section class="back">
         <div class="text-box">
             <div class="content-container">
@@ -17,6 +22,15 @@
                     </div>
                 </div>
                 <div class="map-container">
+                    <div class = "route-info-box">
+                        <div class = "route-name saira-bold">
+                            <a href="{{ route_url }}" target ="_blank">{{ route_name }}</a>
+                        </div>
+                        <div class = "route-grade saira-regular">
+                            "GRADE" - "TYPE" Climb - Length: "HEIGHT" ft - "STARS" out of 4 average stars.
+<!-- Add variable above -->
+                        </div>
+                    </div>
                     <div class = "map-box">
                         <div id="map"></div>
                     </div>
@@ -24,8 +38,13 @@
             </div>
         </div>
         <div class = "score-box">
-            <p>Wow! Your pin was {{ distance }} kilometers away from the route!</p>
-            <a href = "{{ route_url }}" target="_blank"> Route Page</a>
+            <div class="score-bar-container">
+                <div class="score-bar" style="width: {{ (score / 5000) * 100 }}%;"></div>
+                <div class="score-text saira-bold">{{ score }}  /  5000</div>
+            </div>
+            <div class = "distance-text saira-bold">
+                Your guess was {{ distance_str }} km away from the true location!
+            </div>
         </div>
     </section>
     <script>
