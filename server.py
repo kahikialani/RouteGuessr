@@ -164,11 +164,10 @@ def single_result(operation_id):
 
         calculator = Calculations()
         distance = calculator.distance_finder(user_coords, route_coords)
-        score = calculator.find_score(distance)
-        zoom_level = 12
+        score = round(calculator.find_score(distance))
         if distance < 0.8:
             zoom_level = 17
-        if distance < 1.0:
+        elif distance < 1.0:
             zoom_level = 16
         elif distance < 3:
             zoom_level = 14
@@ -189,13 +188,13 @@ def single_result(operation_id):
         logging.debug(f"zoom_level: {zoom_level}")
         logging.debug(f"distance: {distance}")
         logging.debug(f"score: {score}")
-
+        distance_str = round(distance, 2)
         data = session[f'route_{operation_id}']
         return render_template('single_result.html',
                                image_url=data['image_url'],
                                route_url=data['route_url'],
                                area_name=data['area_name'],
-                               route_name=data['route_name'],
+                               route_name=data['route_name'].upper(),
                                area_lat=data['area_lat'],
                                area_lon=data['area_lon'],
                                route_lat=data['route_lat'],
@@ -207,7 +206,10 @@ def single_result(operation_id):
                                maps_key=api_key,
                                operation_id=operation_id,
                                zoom_level=zoom_level,
-                               distance=distance)
+                               distance=distance,
+                               distance_str=distance_str,
+                               score=score)
+
     else:
         return redirect(url_for('index'))
 
