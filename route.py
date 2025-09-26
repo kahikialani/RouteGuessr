@@ -9,15 +9,15 @@ class FindRandomRoute:
     def __init__(self):
         self.call_count = 0
         self.data = {
-            'image_url': None,
-            'route_url': None,
-            'starting_url': None,
-            'route_name': None,
-            'area_name': None,
-            'area_lat': None,
-            'area_lon': None,
-            'route_lat': None,
-            'route_lon': None,
+            'image_url': str(),
+            'route_url': str(),
+            'starting_url': str(),
+            'route_name': str(),
+            'area_name': str(),
+            'area_lat': float(),
+            'area_lon': float(),
+            'route_lat': float(),
+            'route_lon': float(),
         }
 
     def get_area(self, url):
