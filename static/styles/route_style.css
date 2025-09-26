@@ -6,6 +6,29 @@ body {
     flex-direction: column !important;
 }
 
+.logo-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.logo-link {
+    text-decoration: none;
+    display: block;
+}
+
+.logo {
+    height: 50px;
+    width: auto;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.logo:hover {
+    opacity: 0.8;
+}
+
 .back {
     height: 100vh;
     display: flex;
@@ -31,7 +54,7 @@ body {
     color: white;
     font-size: 1.2rem;
     line-height: 1.6;
-    border: 1px solid;
+    border: 1px solid #8a8888;
 }
 
 .content-container {
@@ -76,7 +99,7 @@ body {
 }
 
 .map-title {
-    color: #333;
+    color: #8a8888;
     font-size: 1.1rem;
     font-weight: bold;
     margin-bottom: 10px;
@@ -84,7 +107,7 @@ body {
 }
 
 #map {
-    height: 500px; /* Reduced from 900px to match image container */
+    height: 500px;
     width: 100%;
     border-radius: 10px;
     border: 2px solid #555555;
