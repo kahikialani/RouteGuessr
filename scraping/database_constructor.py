@@ -1,12 +1,9 @@
-from unittest.mock import create_autospec
-
 from bs4 import BeautifulSoup
 import requests
 import logging
 import time
 import re
 import psycopg2
-import os
 import sqlite3
 from dotenv import load_dotenv
 
@@ -23,7 +20,6 @@ class DataConstructor:
         self.input_url = url
         self.use_local = use_local
         self.current_area_id = None
-        # Connection string like 'conn_str = f"dbname={PROJECT} user={USERNAME} password={PASSWORD} host={HOST} port={PORT} sslmode=require&channel_binding=require"'
         self.db_connection_string = db_connection_string
         if use_local:
             self.conn = sqlite3.connect(local_db_path)
@@ -349,7 +345,7 @@ class DataConstructor:
     def get_sub_area(self, url):
         logging.info(f"Getting sub area info for {url}")
         logging.info(f'waiting for time.sleep')
-        time.sleep(4)
+        time.sleep(5)
         try:
             page = BeautifulSoup(self.session.get(url).text, 'html.parser')
             areas_section = page.find_all('div', class_="lef-nav-row")
@@ -368,7 +364,7 @@ class DataConstructor:
     def get_route_page(self, url):
         logging.debug(f"getting routes from last sub area: {url}")
         logging.info(f'waiting for time.sleep')
-        time.sleep(4)
+        time.sleep(5)
         try:
             page = BeautifulSoup(self.session.get(url).text, 'html.parser')
             table = page.find('table', id='left-nav-route-table')
@@ -391,7 +387,7 @@ class DataConstructor:
         route_data = {}
         logging.debug(f"getting ROUTE data: {url}")
         logging.info(f'waiting for time.sleep')
-        time.sleep(4)
+        time.sleep(5)
         try:
             page = BeautifulSoup(self.session.get(url).text, 'html.parser')
             # Checks if there are images.
@@ -435,7 +431,16 @@ class DataConstructor:
                 # Send to DB
                 # save_route_data also returns route_id
                 r_id = self.save_route_data(route_data)
-                self.save_route_images(r_id, img_list)
+                true_images = []
+
+                for non_cached_url in img_list:
+                    logging.debug(f"Getting cached image: {non_cached_url}")
+                    time.sleep(5)
+                    final_image = BeautifulSoup(requests.get(non_cached_url).text, 'html.parser').find('img', class_='img-fluid main-photo')['src']
+                    true_images.append(final_image)
+                    logging.debug(f"cached img: {final_image}")
+                self.save_route_images(r_id, true_images)
+
         except Exception as e:
             logging.error(f"Exception: {e}")
 
@@ -444,12 +449,9 @@ class DataConstructor:
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     load_dotenv()
-    neon_connection = os.getenv("NEON_KEY")
-    if not neon_connection:
-        logging.error("NEON_KEY environment variable not found")
-        exit(1)
+    neon_connection = None#os.getenv("NEON_KEY")
     location_url = input('Input MP link:')
-    local = input("Enter 'True' or 'False': ").lower()
+    local = input("Enter 'True' or 'False' for local env: ").lower()
     if local == 'true':
         DataConstructor(use_local=True, db_connection_string=neon_connection, url=location_url)
     elif local == 'false':

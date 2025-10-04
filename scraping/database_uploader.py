@@ -321,7 +321,7 @@ if __name__ == '__main__':
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
     load_dotenv()
-    neon_connection = os.getenv("NEON_KEY")
+    neon_connection = os.getenv("NEON_URL")
     sqlite_path = 'RouteGuessrDB.db'
 
     if not neon_connection:
