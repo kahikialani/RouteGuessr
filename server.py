@@ -369,7 +369,7 @@ def level_results(level):
     avg_lon = (lon_guess + route_lon) / 2
 
     if distance < 0.8:
-        zoom_level = 17
+        zoom_level = 16
     elif distance < 1.0:
         zoom_level = 16
     elif distance < 3:
@@ -565,6 +565,7 @@ def submit_level():
         'distance': distance,
         'total_score': attempt.total_score
     })
+
 # ======================= GOOGLE AUTHENTICATION =======================
 @app.route("/login")
 def login():
