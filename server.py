@@ -35,7 +35,8 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to play Daily Challenge'
 
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # Only for local development
+if os.getenv('RENDER') is None:
+       os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 
 google_bp = make_google_blueprint(
@@ -632,4 +633,8 @@ def reset_daily():
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
+    if os.getenv('RENDER') is None:
+        with app.app_context():
+            db.create_all()
+            print("Database initialized")
     app.run(host='0.0.0.0', port=8080, debug=True)
