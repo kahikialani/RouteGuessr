@@ -4,3 +4,4 @@ __pycache__/
 .env
 deprecated
 scraping/RouteGuessrDB.db
+scraping/testing.py
