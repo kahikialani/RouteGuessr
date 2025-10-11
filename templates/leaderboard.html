@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROUTEGUESSR</title>
+    <link href="{{ url_for('static', filename='styles/level_result_style.css')}}" rel = "stylesheet"/>
+    <link rel="icon" type="image/png" href="../static/images/ROUTEGUESSR.png">
+    <link rel="preload" href="/static/images/432A1345.jpg" as="image">
+</head>
+<body>
+    <h1>Daily Leaderboard - {{ date }}</h1>
+
+    {% if leaderboard %}
+        <ol>
+        {% for entry in leaderboard %}
+            <li>{{ entry.username }} - {{ entry.score }} points</li>
+        {% endfor %}
+        </ol>
+    {% else %}
+        <p>No scores yet today. Be the first!</p>
+    {% endif %}
+
+    <a href="{{ url_for('home') }}">Back to Home</a>
+</body>
+</html>

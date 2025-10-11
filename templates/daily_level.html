@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}ROUTEGUESSR{% endblock %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='styles/daily_level.css') }}" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+    <div class="logo-container">
+        <a href="/" class="logo-link">
+            <img src="{{ url_for('static', filename='images/ROUTEGUESSR.png') }}" alt="RouteGuessr Logo" class="logo">
+        </a>
+    </div>
+    <div class="score-card">
+        <h2>Level: {{ level }}/{{ total_levels }}</h2>
+        <h2>Score: {{ current_total }}</h2>
+    </div>
+
+<div class="blur-background" id="blurBg"></div>
+
+<div class="image-container">
+    <img class="main-image" id="mainImage" alt="ROUTE IMAGE UNAVAILABLE">
+    <div class="map-overlay" id="mapOverlay">
+        <div id="map"></div>
+        <div class="map-controls">
+            <div class="map-instructions" id="mapInstructions">
+                Click anywhere on the map to place your guess marker
+            </div>
+            <button class="submit-btn" id="submitBtn" onclick="submitGuess()">
+                Submit
+            </button>
+        </div>
+    </div>
+    <div class="image-icon" id="imageIcon">
+        <img src="{{ url_for('static', filename='images/mountainmap.png') }}" alt="Icon">
+    </div>
+</div>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ maps_key }}&callback=initMap" async defer></script>
+    <script>
+let map;
+let guessMarker = null;
+let guessCoordinates = null;
+let mapExpanded = false;
+let mapInitialized = false;
+
+// Get image URL from template variable or default
+const IMAGE_URL = '{{ image_url }}';
+const level = {{ level }};
+
+function initMap() {
+    // Initialize map immediately when called
+    const mapOptions = {
+        center: { lat: 39.8283, lng: -98.5795 },
+        zoom: 4,
+        streetViewControl: false,
+        rotateControl: false,
+        fullscreenControl: false,
+        clickableIcons: false,
+        mapTypeControl: false,
+        mapTypeId: google.maps.MapTypeId.HYBRID,
+        scaleControl: false,
+        disableDefaultUi: true,
+        mapTypeControlOptions: {
+            mapTypeIds: []
+        }
+    };
+
+    map = new google.maps.Map(document.getElementById('map'), mapOptions);
+    mapInitialized = true;
+
+    // LISTENER: When user clicks map, place a pin
+    map.addListener('click', function(event) {
+        placePin(event.latLng);
+    });
+}
+
+function calculateImageSize(img) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const padding = 0.02;
+    const availableWidth = vw * (1 - padding);
+    const availableHeight = vh * (1 - padding);
+
+    const imgRatio = img.naturalWidth / img.naturalHeight;
+    const screenRatio = availableWidth / availableHeight;
+
+    let width, height;
+
+    if (imgRatio > screenRatio) {
+        width = availableWidth;
+        height = availableWidth / imgRatio;
+    } else {
+        height = availableHeight;
+        width = availableHeight * imgRatio;
+    }
+
+    img.style.width = width + 'px';
+    img.style.height = height + 'px';
+
+    // Update blur background
+    const blurBg = document.getElementById('blurBg');
+    const borderSize = 30;
+    blurBg.style.width = (width + borderSize) + 'px';
+    blurBg.style.height = (height + borderSize) + 'px';
+
+    // Position the icon
+    const icon = document.getElementById('imageIcon');
+    if (icon) {
+        const imgRect = img.getBoundingClientRect();
+        const iconOffset = 20;
+        icon.style.left = (imgRect.left + imgRect.width - icon.offsetWidth - iconOffset) + 'px';
+        icon.style.top = (imgRect.top + imgRect.height - icon.offsetHeight - iconOffset) + 'px';
+        icon.style.opacity = '1';
+    }
+
+    // Store ACTUAL image boundaries (using getBoundingClientRect for exact position)
+    const imgRect = img.getBoundingClientRect();
+    window.imageDimensions = {
+        left: imgRect.left,
+        top: imgRect.top,
+        width: imgRect.width,  // Use actual rendered width
+        height: imgRect.height  // Use actual rendered height
+    };
+}
+
+function showMap() {
+    const mapOverlay = document.getElementById('mapOverlay');
+    const mapIcon = document.getElementById('imageIcon');  // Add this
+
+    if (!window.imageDimensions) return;
+
+    // Position map to cover the entire image
+    mapOverlay.style.left = window.imageDimensions.left + 'px';
+    mapOverlay.style.top = window.imageDimensions.top + 'px';
+    mapOverlay.style.width = window.imageDimensions.width + 'px';
+    mapOverlay.style.height = window.imageDimensions.height + 'px';
+
+    mapExpanded = true;
+    mapOverlay.classList.add('expanded');
+
+    // Hide the map icon when map is shown
+    if (mapIcon) {
+        mapIcon.style.opacity = '0';
+        mapIcon.style.pointerEvents = 'none';
+    }
+
+    // Initialize map if not already done
+    if (!mapInitialized && typeof google !== 'undefined' && google.maps) {
+        initMap();
+    }
+
+    // Trigger resize to ensure map renders properly
+    if (mapInitialized && map) {
+        setTimeout(() => {
+            google.maps.event.trigger(map, 'resize');
+            // Re-center the map
+            if (guessCoordinates) {
+                map.setCenter(guessCoordinates);
+            } else {
+                map.setCenter({ lat: 39.8283, lng: -98.5795 });
+            }
+        }, 100); // Wait for transition
+    }
+}
+
+function hideMap() {
+    const mapOverlay = document.getElementById('mapOverlay');
+    const mapIcon = document.getElementById('imageIcon');  // Add this
+
+    mapExpanded = false;
+    mapOverlay.classList.remove('expanded');
+
+    // Show the map icon again when map is hidden
+    if (mapIcon) {
+        mapIcon.style.opacity = '1';
+        mapIcon.style.pointerEvents = 'auto';
+    }
+}
+
+function placePin(location) {
+    if (guessMarker) {
+        guessMarker.setMap(null);
+    }
+
+    guessMarker = new google.maps.Marker({
+        position: location,
+        map: map,
+        title: "Your Guess"
+    });
+
+    guessCoordinates = {
+        lat: location.lat(),
+        lng: location.lng()
+    };
+
+    const submitBtn = document.getElementById('submitBtn');
+    const instructions = document.getElementById('mapInstructions');
+    if (submitBtn) submitBtn.classList.add('visible');
+    if (instructions) instructions.classList.add('hidden');
+
+    console.log("Pin placed at:", guessCoordinates);
+}
+
+function submitGuess() {
+    if (!guessCoordinates) {
+        alert('Please place a pin on the map first!');
+        return;
+    }
+
+    fetch('/api/submit-level', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            level: level,
+            guess_lat: guessCoordinates.lat,
+            guess_lon: guessCoordinates.lng
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            window.location.href = `/daily/level/${level}/results`;
+        } else {
+            alert(data.error || 'Error submitting guess');
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        alert('Failed to submit guess');
+    });
+}
+
+// Load image and set up event listeners
+window.addEventListener('load', function() {
+    const mainImage = document.getElementById('mainImage');
+    const mapIcon = document.getElementById('imageIcon');
+    const mapOverlay = document.getElementById('mapOverlay');
+
+    // Try to initialize map early if Google Maps is loaded
+    if (typeof google !== 'undefined' && google.maps) {
+        initMap();
+    } else {
+        // If Google Maps isn't loaded yet, wait for it
+        window.initMap = initMap;
+    }
+
+    mainImage.src = IMAGE_URL;
+    mainImage.onload = function() {
+        calculateImageSize(mainImage);
+    };
+
+    // Icon hover - show full map
+    mapIcon.addEventListener('mouseenter', function() {
+        showMap();
+    });
+
+    mapIcon.addEventListener('mouseleave', function(e) {
+        // Check if we're moving to the map overlay
+        const toElement = e.relatedTarget;
+        if (!mapOverlay.contains(toElement)) {
+            hideMap();
+        }
+    });
+
+    // Icon click - toggle map
+    mapIcon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (mapExpanded) {
+            hideMap();
+        } else {
+            showMap();
+        }
+    });
+
+    // Keep map open when hovering over it
+    mapOverlay.addEventListener('mouseenter', function() {
+        // Map stays open
+    });
+
+    mapOverlay.addEventListener('mouseleave', function() {
+        hideMap();
+    });
+
+    // Clicking the map overlay closes it (except when clicking on the actual map)
+    mapOverlay.addEventListener('click', function(e) {
+        if (e.target === mapOverlay) {
+            hideMap();
+        }
+    });
+});
+
+// Recalculate on window resize
+window.addEventListener('resize', function() {
+    const mainImage = document.getElementById('mainImage');
+    if (mainImage.complete && mainImage.naturalHeight !== 0) {
+        calculateImageSize(mainImage);
+        // Update map position if it's visible
+        if (mapExpanded) {
+            showMap();
+        }
+    }
+});
+    </script>
+{% endblock %}
+
