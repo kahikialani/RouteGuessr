@@ -650,7 +650,11 @@ def init_db():
     db.create_all()
     print("Database tables created!")
 
+# ======================= ERROR HANDLING =======================
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 # ======================= DEVELOPER FUNCTIONS =======================
 @app.route("/reset-daily")
