@@ -209,8 +209,13 @@ def generate_daily(entered_date = None):
         return existing
 
     from random import choices, choice
-    all_route_ids = [row.id for row in ClimbingRoute.query.all()]
-    route_ids = choices(all_route_ids, k = 5)
+    all_area_ids = [row.id for row in ClimbingArea.query.all()]
+    area_ids = choices(all_area_ids, k = 5)
+
+    route_ids = []
+    for area_id in area_ids:
+        routes_in_area = [row.id for row in ClimbingRoute.query.filter_by(area_id=area_id).all()]
+        route_ids.append(choice(routes_in_area))
 
     img_ids = []
     for route_id in route_ids:
