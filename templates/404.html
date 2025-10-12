@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="icon" type="image/png" href="../static/images/ROUTEGUESSR.png">
+<style>
+        .four-o-four-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .four-o-four-box {
+            backdrop-filter: blur(5px);
+            background-color: rgba(50, 50, 50, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .missing-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 15px 40px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0055b3, #0062cc);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0062cc, #006ee6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 85, 179, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="logo-container">
+        <a href="/" class="logo-link">
+            <img src="{{ url_for('static', filename='images/ROUTEGUESSR.png') }}" alt="RouteGuessr Logo" class="logo">
+        </a>
+    </div>
+    <div class="four-o-four-container">
+        <div class="four-o-four-box">
+            <h1 class="missing-title dela-gothic-one-regular">404 - Page Not Found</h1>
+            <a href="{{ url_for('home') }}" class="btn btn-secondary">Back to Home</a>
+        </div>
+    </div>
+{% endblock %}
