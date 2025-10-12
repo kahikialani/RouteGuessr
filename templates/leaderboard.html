@@ -1,20 +1,74 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROUTEGUESSR</title>
-    <link href="{{ url_for('static', filename='styles/level_result_style.css')}}" rel = "stylesheet"/>
-    <link rel="icon" type="image/png" href="../static/images/ROUTEGUESSR.png">
-    <link rel="preload" href="/static/images/432A1345.jpg" as="image">
-</head>
-<body>
-    <h1>Daily Leaderboard - {{ date }}</h1>
+{% extends "base.html" %}
+
+{% block styles %}
+    <title>ROUTEGUESSR - Daily Leaderboard</title>
+    <link href="{{ url_for('static', filename='styles/leaderboard.css')}}" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+<div class="logo-container">
+    <a href="/" class="logo-link">
+        <img src="{{ url_for('static', filename='images/ROUTEGUESSR.png') }}" alt="RouteGuessr Logo" class="logo">
+    </a>
+</div>
+<div class="leaderboard-page">
+    <div class="leaderboard">
+        <div class="leaderboard-title">
+        DAILY LEADERBOARD
+            <div class="date">{{ date.strftime('%B %d, %Y') }}</div>
+        </div>
+        <div class="leaderboard-table">
+            <div class="table-header">
+                <div>RANK</div>
+                <div>PLAYER</div>
+                <div>LEVEL 1</div>
+                <div>LEVEL 2</div>
+                <div>LEVEL 3</div>
+                <div>LEVEL 4</div>
+                <div>LEVEL 5</div>
+                <div>SCORE</div>
+            </div>
+        {% if leaderboard %}
+            {% for attempt in leaderboard %}
+            <div class="leaderboard-entry {% if user.is_authenticated and attempt.user_id == user.id %}current-user{% endif %}">
+                <div class="rank">
+                    {{ loop.index }}
+                </div>
+                <div class="username">
+                    <span>{{ attempt.user.username }}</span>
+                </div>
+                <div class="ind_level_score">{{ "{:,}".format(attempt.level_scores[0]) }}</div>
+                <div class="ind_level_score">{{ "{:,}".format(attempt.level_scores[1]) }}</div>
+                <div class="ind_level_score">{{ "{:,}".format(attempt.level_scores[2]) }}</div>
+                <div class="ind_level_score">{{ "{:,}".format(attempt.level_scores[3]) }}</div>
+                <div class="ind_level_score">{{ "{:,}".format(attempt.level_scores[4]) }}</div>
+                <div class="score">{{ "{:,}".format(attempt.total_score) }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p class="empty-state-text">No one has completed today's challenge</p>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+    <div style="text-align: center;">
+        <a href="/" class="back-button">Back to Home</a>
+    </div>
+</div>
+
+
+
+
+
+
+
+<!--    <h1>Daily Leaderboard - {{ date }}</h1>
 
     {% if leaderboard %}
         <ol>
         {% for entry in leaderboard %}
-            <li>{{ entry.username }} - {{ entry.score }} points</li>
+            <li>{{ entry.user.username }} - {{ entry.total_score }} points</li>
         {% endfor %}
         </ol>
     {% else %}
@@ -22,5 +76,5 @@
     {% endif %}
 
     <a href="{{ url_for('home') }}">Back to Home</a>
-</body>
-</html>
+-->
+{% endblock %}
