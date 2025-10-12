@@ -173,6 +173,33 @@ class Calculations:
             score = 5000
         return score
 
+    def get_score_class(self, score):
+        """Return CSS class based on score (assuming max is 5000)"""
+        if score >= 4500:
+            return 'score-excellent'
+        elif score >= 3500:
+            return 'score-good'
+        elif score >= 2500:
+            return 'score-average'
+        elif score >= 1500:
+            return 'score-poor'
+        else:
+            return 'score-bad'
+
+    def get_total_class(self, total):
+        if total == 25000:
+            return 'total-perfect'
+        elif total >= 24000:
+            return 'total-excellent'
+        elif total >= 21000:
+            return 'total-good'
+        elif total >= 19000:
+            return 'total-average'
+        elif total >= 14000:
+            return 'total-poor'
+        else:
+            return 'total-bad'
+
 def generate_daily(entered_date = None):
     if entered_date is None:
         entered_date = date.today()
@@ -448,12 +475,11 @@ def daily_results():
 
     level_data = {}
     level_names = ["one", "two", "three", "four", "five"]
-
+    calc = Calculations()
     for i in range(1, 6):
         level_name = level_names[i - 1]
         route = getattr(daily_data, f"route_{level_name}")
         image = getattr(daily_data, f"image_{level_name}")
-
         level_data[str(i)] = {
             'route_name': route.route_name,
             'route_link': route.route_link,
@@ -468,13 +494,16 @@ def daily_results():
             'score': attempt.level_scores[i - 1],
             'distance': attempt.distance[i - 1],
             'guess_lat': attempt.lat_guess[i - 1],
-            'guess_lon': attempt.lon_guess[i - 1]
+            'guess_lon': attempt.lon_guess[i - 1],
+            'score_class': calc.get_score_class(attempt.level_scores[i - 1])
         }
+    total_score_class = calc.get_total_class(attempt.total_score)
 
     return render_template("daily_final_results.html",
                            user=current_user,
                            total_score=attempt.total_score,
                            level_data=level_data,
+                           total_score_class=total_score_class,
                            date=today)
 
 @app.route("/daily-leaderboard")

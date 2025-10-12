@@ -42,20 +42,139 @@ body {
 .title {
     font-family: "Dela Gothic One", sans-serif;
     font-size: 3rem;
-    margin: 0 0 20px 0;
+    margin: 0 0 0px 0;
     color: white;
 }
 
-.total-score h2 {
+button {
+    position: relative;
+    height: 52px;
     font-size: 2rem;
-    margin: 10px 0;
-    color: #4CAF50;
+    font-family: "Dela Gothic One", sans-serif;
+    border: none;
+    border-radius: 12px;
+    padding: 0 16px;
+    background: rgba(25, 25, 25, 0.4);
+}
+
+button.total-perfect span {
+    animation-name: rainbowShine;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    background-image: linear-gradient(to right,
+        #ff78fa 0%,
+        #ffb37c 25%,
+        #ffb36c 50%,
+        #ffb37c 75%,
+        #ff78fa 100%
+    );
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    background-size: 200%;
+    background-position: 200%;
+}
+
+button.total-excellent span {
+    animation-name: goldShine;
+    animation-duration: 2.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+    background-image: linear-gradient(to right,
+        #FFD700 0%,
+        #FFA500 50%,
+        #FFD700 100%
+    );
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    background-size: 200%;
+}
+
+button.total-good span {
+    color: #40d417;
+    animation: greenPulse 2s ease-in-out infinite;
+}
+
+button.total-average span {
+    color: #e39f00;
+    animation: yellowGlow 2s ease-in-out infinite;
+}
+
+button.total-poor span {
+    color: #eb7126;
+    animation: orangeFlicker 1.5s ease-in-out infinite;
+}
+
+button.total-bad span {
+    color: #F44336;
+    animation: redFade 2s ease-in-out infinite;
+}
+
+@keyframes rainbowShine {
+    from {
+        background-position: 200%;
+    }
+    to {
+        background-position: 0%;
+    }
+}
+
+@keyframes goldShine {
+    0%, 100% {
+        background-position: 0%;
+    }
+    50% {
+        background-position: 200%;
+    }
+}
+
+@keyframes greenPulse {
+    0%, 100% {
+        opacity: 1;
+        text-shadow: 0 0 10px rgba(139, 195, 74, 0.5);
+    }
+    50% {
+        opacity: 0.8;
+        text-shadow: 0 0 20px rgba(139, 195, 74, 0.8);
+    }
+}
+
+@keyframes yellowGlow {
+    0%, 100% {
+        text-shadow: 0 0 10px rgba(242, 147, 5, 0.3);
+    }
+    40% {
+        text-shadow: 0 0 15px rgba(242, 147, 5, 0.5);
+    }
+}
+
+@keyframes orangeFlicker {
+    0%, 100% {
+        opacity: 1;
+    }
+    25%, 75% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 0.9;
+    }
+}
+
+@keyframes redFade {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
 }
 
 .date {
     color: #b0b0b0;
     font-size: 1rem;
-    margin: 5px 0;
+    margin: 5px 0 15px 0;
 }
 
 .levels-container {
@@ -86,6 +205,7 @@ body {
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    font-family: "Bebas Neue", sans-serif;
 }
 
 .level-header h3 {
@@ -97,13 +217,20 @@ body {
 .level-score {
     font-size: 1.3rem;
     font-weight: bold;
-    color: #4CAF50;
+
 }
+
+.level-score.score-excellent { color: #4CAF50; }
+.level-score.score-good { color: #8BC34A; }
+.level-score.score-average { color: #FFC107; }
+.level-score.score-poor { color: #FF9800; }
+.level-score.score-bad { color: #F44336; }
 
 .level-content {
     display: flex;
     gap: 20px;
     align-items: flex-start;
+    font-family: "Bebas Neue", sans-serif;
 }
 
 .image-section {
@@ -130,6 +257,7 @@ body {
     font-size: 1.4rem;
     font-weight: bold;
     margin-bottom: 5px;
+    font-family: "Bebas Neue", sans-serif;
 }
 
 .route-name a {
@@ -155,6 +283,7 @@ body {
     background: rgba(255, 255, 255, 0.1);
     padding: 5px 12px;
     border-radius: 5px;
+    font-family: "Saira", sans-serif;
 }
 
 .grade {
@@ -170,14 +299,60 @@ body {
     font-size: 1.1rem;
     color: #90CAF9;
     font-weight: 500;
+    font-family: "Saira", sans-serif;
 }
 
 .distance-info {
     font-size: 1rem;
     padding: 10px;
-    background: rgba(76, 175, 80, 0.2);
-    border-left: 3px solid #4CAF50;
+    border-left: 3px solid;
     border-radius: 5px;
+    font-family: "Saira", sans-serif;
+}
+
+.distance-info.score-excellent {
+    background: transparent;
+    border-left-color: #4CAF50;
+}
+.distance-info.score-excellent strong,
+.distance-info.score-excellent {
+    color: #4CAF50 !important;
+}
+
+.distance-info.score-good {
+    background: transparent;
+    border-left-color: #8BC34A;
+}
+.distance-info.score-good strong,
+.distance-info.score-good {
+    color: #8BC34A !important;
+}
+
+.distance-info.score-average {
+    background: transparent;
+    border-left-color: #FFC107;
+}
+.distance-info.score-average strong,
+.distance-info.score-average {
+    color: #FFC107 !important;
+}
+
+.distance-info.score-poor {
+    background: transparent;
+    border-left-color: #FF9800;
+}
+.distance-info.score-poor strong,
+.distance-info.score-poor {
+    color: #FF9800 !important;
+}
+
+.distance-info.score-bad {
+    background: transparent;
+    border-left-color: #F44336;
+}
+.distance-info.score-bad strong,
+.distance-info.score-bad {
+    color: #F44336 !important;
 }
 
 .coordinates {
@@ -185,6 +360,7 @@ body {
     color: #999;
     font-family: monospace;
     line-height: 1.6;
+
 }
 
 .actions {

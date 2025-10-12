@@ -19,10 +19,11 @@
 <section class="results-page">
     <div class="header-section">
         <h1 class="title">Daily Challenge Complete!</h1>
-        <div class="total-score">
-            <h2>Total Score: {{ total_score }}</h2>
-            <p class="date">{{ date.strftime('%B %d, %Y') }}</p>
-        </div>
+        <p class="date">{{ date.strftime('%B %d, %Y') }}</p>
+        <button class="{{ total_score_class }}">
+            <span class="text">TOTAL SCORE: {{ total_score }}</span>
+        </button>
+
     </div>
     <div class="levels-container">
         {% for level_num in range(1, 6) %}
@@ -30,7 +31,7 @@
             <div class="level-card">
                 <div class="level-header">
                     <h3>Level {{ level_num }}</h3>
-                    <div class="level-score">{{ level.score }} points</div>
+                    <div class="level-score {{ level.score_class }}">{{ level.score }} points</div>
                 </div>
 
                 <div class="level-content">
@@ -53,7 +54,7 @@
                         <div class="area-name">{{ level.area_name }}</div>
 
                         <!-- Distance -->
-                        <div class="distance-info">
+                        <div class="distance-info {{ level.score_class }}">
                             <strong>Your guess:</strong>
                             {% if level.distance >= 1 %}
                                 {{ "%.2f"|format(level.distance) }} km away
