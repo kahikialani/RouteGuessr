@@ -515,12 +515,11 @@ def daily_results():
 def daily_leaderboard():
     today = date.today()
 
-    leaderboard = db.session.query(
-        User.username,
-        DailyAttempt.score,
-        DailyAttempt.completed_at
-    ).join(User).filter(
-        DailyAttempt.challenge_date == today
+    from sqlalchemy.orm import joinedload
+    leaderboard = (DailyAttempt.query.filter_by(
+        challenge_date=today
+    ).options(
+        joinedload(DailyAttempt.user)
     ).order_by(
         DailyAttempt.score.desc()
     ).limit(100).all()
