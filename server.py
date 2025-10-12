@@ -521,8 +521,8 @@ def daily_leaderboard():
     ).options(
         joinedload(DailyAttempt.user)
     ).order_by(
-        DailyAttempt.score.desc()
-    ).limit(100).all()
+        DailyAttempt.total_score.desc()
+    ).all())
 
     return render_template("leaderboard.html",
                            leaderboard=leaderboard,
