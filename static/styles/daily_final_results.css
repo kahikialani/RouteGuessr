@@ -5,23 +5,6 @@ body {
     min-height: 100vh;
 }
 
-.logo-container {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
-}
-
-.logo {
-    height: 50px;
-    width: auto;
-    transition: opacity 0.3s ease;
-    cursor: pointer;
-}
-
-.logo:hover {
-    opacity: 0.8;
-}
 
 .results-page {
     max-width: 1200px;
@@ -34,7 +17,7 @@ body {
     margin-bottom: 40px;
     backdrop-filter: blur(5px);
     background-color: rgba(50, 50, 50, 0.5);
-    padding: 30px;
+    padding: 15px;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -42,7 +25,7 @@ body {
 .title {
     font-family: "Dela Gothic One", sans-serif;
     font-size: 3rem;
-    margin: 0 0 0px 0;
+    margin: 0 0 0 0;
     color: white;
 }
 
@@ -53,8 +36,7 @@ button {
     font-family: "Dela Gothic One", sans-serif;
     border: none;
     border-radius: 12px;
-    padding: 0 16px;
-    background: rgba(25, 25, 25, 0.4);
+    background: rgb(28, 28, 31, 0.0);
 }
 
 button.total-perfect span {
@@ -98,12 +80,12 @@ button.total-good span {
 }
 
 button.total-average span {
-    color: #e39f00;
+    color: #d69200;
     animation: yellowGlow 2s ease-in-out infinite;
 }
 
 button.total-poor span {
-    color: #eb7126;
+    color: #ff5900;
     animation: orangeFlicker 1.5s ease-in-out infinite;
 }
 
@@ -143,10 +125,10 @@ button.total-bad span {
 
 @keyframes yellowGlow {
     0%, 100% {
-        text-shadow: 0 0 10px rgba(242, 147, 5, 0.3);
+        text-shadow: 0 0 10px rgba(255, 75, 5, 0.3);
     }
     40% {
-        text-shadow: 0 0 15px rgba(242, 147, 5, 0.5);
+        text-shadow: 0 0 15px rgba(255, 75, 5, 0.5);
     }
 }
 
@@ -174,7 +156,7 @@ button.total-bad span {
 .date {
     color: #b0b0b0;
     font-size: 1rem;
-    margin: 5px 0 15px 0;
+    margin: 0px 0 10px 0;
 }
 
 .levels-container {
