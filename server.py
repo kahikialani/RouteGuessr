@@ -518,6 +518,9 @@ def daily_leaderboard():
     from sqlalchemy.orm import joinedload
     leaderboard = (DailyAttempt.query.filter_by(
         challenge_date=today
+    ).filter(
+        DailyAttempt.level_scores.isnot(None),
+        db.func.json_array_length(DailyAttempt.level_scores) == 5
     ).options(
         joinedload(DailyAttempt.user)
     ).order_by(
