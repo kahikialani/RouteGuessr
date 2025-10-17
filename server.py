@@ -418,6 +418,10 @@ def level_results(level):
         zoom_level = 9
     elif distance < 150:
         zoom_level = 8
+    elif distance < 300:
+        zoom_level = 6
+    elif distance < 450:
+        zoom_level = 5
     else:
         zoom_level = 4
 
