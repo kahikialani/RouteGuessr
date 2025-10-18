@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_sqlalchemy import SQLAlchemy
@@ -20,6 +20,7 @@ neon_connection = os.getenv("NEON_URL")
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = neon_connection
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
@@ -200,6 +201,25 @@ class Calculations:
         else:
             return 'total-bad'
 
+def generate_free_play():
+    from random import choice, choices
+    all_area_ids = [row.id for row in ClimbingArea.query.all()]
+    area_ids = choices(all_area_ids, k = 5)
+
+    route_ids = []
+    for area_id in area_ids:
+        routes_in_area = [row.id for row in ClimbingRoute.query.filter_by(area_id=area_id).all()]
+        route_ids.append(choice(routes_in_area))
+
+    img_ids = []
+    for route_id in route_ids:
+        all_images = RouteImage.query.filter_by(route_id=route_id).all()
+        image = choice(all_images)
+        img_ids.append(image.id)
+
+    data = {'area_ids': area_ids, 'route_ids': route_ids, 'img_ids': img_ids}
+    return data
+
 def generate_daily(entered_date = None):
     if entered_date is None:
         entered_date = date.today()
@@ -251,6 +271,7 @@ def load_user(user_id):
 @app.route("/")
 @app.route("/home")
 def home():
+    session.clear()
     return render_template("home_page.html", user=current_user)
 
 @app.after_request
@@ -342,11 +363,13 @@ def daily_level(level):
 
     image_url = RouteImage.query.filter_by(id=image_id).first().image_link
 
+    current_total = attempt.total_score if attempt.total_score else 0
+
     return render_template("daily_level.html",
                            level=level,
                            total_levels=5,
                            image_url=image_url,
-                           current_total=0,
+                           current_total=current_total,
                            maps_key=map_api)
 
 @app.route("/daily/level/<int:level>/results")
@@ -371,8 +394,6 @@ def level_results(level):
 
     image_url = RouteImage.query.filter_by(id=image_id).first().image_link
     route = ClimbingRoute.query.filter_by(id=route_id).first()
-
-
 
     # Attempt data to render
     score = attempt.level_scores[level_idx0]
@@ -536,17 +557,192 @@ def daily_leaderboard():
                            date=today,
                            user=current_user)
 
+@app.route("/free-play")
+def free_play():
+    data =  generate_free_play()
+    next_level = 1
+
+    session['data'] = data
+    session['level_scores'] = []
+    session['guesses_lat'] = []
+    session['guesses_lon'] = []
+    session['distances'] = []
+    session['level'] = next_level
+    session['total_score'] = 0
+
+    return redirect(url_for("free_play_level", level=next_level))
+
+@app.route("/free-play/level/<level>")
+def free_play_level(level):
+    # if not session.get('level_scores'):
+    #     return redirect(url_for("free_play"))
+    #
+    # if not session.get('data'):
+    #     return redirect(url_for("free_play"))
+    #
+    # if level != session.get('level'):
+    #     return redirect(url_for("free_play_level", level=session.get('level')))
+    #
+    # if level > 5:
+    #     return redirect(url_for("free_play_final_results"))
+
+    # Structured like this data = {'area_ids': area_ids, 'route_ids': route_ids, 'img_ids': img_ids}
+    data = session['data']
+    image_id = data['img_ids'][int(level) - 1]
+    image_url = RouteImage.query.filter_by(id=image_id).first().image_link
+
+    total_score = session['total_score']
+    logging.debug(session)
+    return render_template("free_play_level.html",
+                           image_url=image_url,
+                           total_levels=5,
+                           level=level,
+                           total_score=total_score,
+                           maps_key=map_api)
+
+@app.route("/free-play/level/<int:level>/results")
+def free_play_results(level):
+    if not session:
+        return redirect(url_for("free_play"))
+
+    if len(session['level_scores']) != level:
+        # TODO
+        return redirect(url_for("free_play_level", level=level))
+    data = session['data']
+    image_id = data['img_ids'][int(level) - 1]
+    route_id = data['route_ids'][int(level) - 1]
+    area_id = data['area_ids'][int(level) - 1]
+
+    image_info = RouteImage.query.filter_by(id=image_id).first()
+    route_info = ClimbingRoute.query.filter_by(id=route_id).first()
+    area_info = ClimbingArea.query.filter_by(id=area_id).first()
+
+    logging.debug(session)
+    distance = session['distances'][int(level) - 1]
+    user_lon = session['guesses_lon'][int(level) - 1]
+    user_lat = session['guesses_lat'][int(level) - 1]
+
+    if distance >= 1:
+        distance_str = f"{distance:.2f} km"
+    else:
+        distance_str = f"{distance*1000:.2f} m"
+
+    route_lat = route_info.route_lat
+    route_lon = route_info.route_lon
+
+    avg_lat = (user_lat + route_lat) / 2
+    avg_lon = (user_lon + route_lon) / 2
+
+    if distance < 0.8:
+        zoom_level = 16
+    elif distance < 1.0:
+        zoom_level = 16
+    elif distance < 3:
+        zoom_level = 14
+    elif distance < 5:
+        zoom_level = 13
+    elif distance < 10:
+        zoom_level = 12
+    elif distance < 20:
+        zoom_level = 11
+    elif distance < 40:
+        zoom_level = 10
+    elif distance < 80:
+        zoom_level = 9
+    elif distance < 150:
+        zoom_level = 8
+    elif distance < 300:
+        zoom_level = 6
+    elif distance < 450:
+        zoom_level = 5
+    else:
+        zoom_level = 4
+
+    score = session['level_scores'][int(level) - 1]
+    total_score = session['total_score'] + score
+    session['total_score'] = total_score
+    return render_template("free_play_level_results.html",
+                           level=level,
+                           maps_key=map_api,
+                           total_levels=5,
+                           image_link = image_info.image_link,
+                           score = score,
+                           user_lat = user_lat,
+                           user_lon = user_lon,
+                           distance = session['distances'][int(level) - 1],
+                           total_score = total_score,
+                           route_name = route_info.route_name,
+                           route_link = route_info.route_link,
+                           route_type = route_info.route_type,
+                           route_grade = route_info.route_grade,
+                           route_stars = route_info.route_stars,
+                           route_length = route_info.route_length,
+                           route_lat = route_info.route_lat,
+                           route_lon = route_info.route_lon,
+                           distance_str = distance_str,
+                           avg_lon = avg_lon,
+                           avg_lat = avg_lat,
+                           zoom_level = zoom_level,
+                           area_name = area_info.area_name)
+
+@app.route("/legendary-lines/play")
+def legendary_lines_play():
+    return render_template("legendary_lines_play.html")
 
 
 # ======================= APIs =======================
+@app.route("/api/submit-free-play", methods=["POST"])
+def submit_free_play():
+    json = request.get_json()
+    level = json['level']
+    guess_lat = json.get('guess_lat')
+    guess_lon = json.get('guess_lon')
+    session['guesses_lat'].append(guess_lat)
+    session['guesses_lon'].append(guess_lon)
+    logging.debug(f"guess_lat: {guess_lat}, guess_lon: {guess_lon}, level: {level}")
+    logging.debug(session)
+
+
+    data = session['data']
+    route_id = data['route_ids'][int(level) - 1]
+    route_data = ClimbingRoute.query.filter_by(id=route_id).first()
+    route_lat, route_lon = route_data.route_lat, route_data.route_lon
+
+    calc = Calculations()
+    user_coords = {
+        'user_lat': guess_lat,
+        'user_lon': guess_lon
+    }
+
+    route_coords = {
+        'route_lat': route_lat,
+        'route_lon': route_lon
+    }
+
+    distance = calc.distance_finder(user_coords, route_coords)
+    score = calc.find_score_daily(distance)
+    score = int(round(score))
+
+    session['level_scores'].append(score)
+    distances = session['distances']
+    distances.append(distance)
+    session['distances'] = distances
+
+    return jsonify({
+        'success': True,
+        'score': int(score),
+        'distance': distance,
+        'total_score': sum(session['level_scores'])
+    })
+
 
 @app.route("/api/submit-level", methods=["POST"])
 @login_required
 def submit_level():
-    data = request.get_json()
-    level = data["level"]
-    guess_lat = data.get("guess_lat")
-    guess_lon = data.get("guess_lon")
+    json = request.get_json()
+    level = json["level"]
+    guess_lat = json.get("guess_lat")
+    guess_lon = json.get("guess_lon")
     today = date.today()
 
     # Query Route Data
@@ -560,12 +756,12 @@ def submit_level():
     route_id = getattr(daily_data, f"route_{level_name}_id")
     route = ClimbingRoute.query.filter_by(id=route_id).first()
     if not route:
-        return redirect(url_for("home"))            # Change before deployment
+        return redirect(url_for("home"))            # TODO
 
     # Query DailyAttempt
     attempt = DailyAttempt.query.filter_by(user_id=current_user.id, challenge_date=today).first()
     if not attempt:
-        return redirect(url_for("home"))            # Change before deployment
+        return redirect(url_for("home"))            # TODO
 
     completed_levels = len(attempt.level_scores) if attempt.level_scores else 0
 
