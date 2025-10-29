@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROUTEGUESSR</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='tailwind/output.css') }}">
+  <style>
+        html {
+          scroll-behavior: smooth;
+        }
+        .hero-title {
+            background: linear-gradient(180deg, #F3831E 0%, #FF6B35 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            display: inline-block;
+            font-size: clamp(0.5rem, 1vw, 0.85rem);
+            padding: clamp(5px, 2vw, 10px) clamp(10px, 1vw, 30px);
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            text-decoration: none;
+            border-radius: 60px;
+            font-weight: 700;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .cta-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.4);
+        }
+
+        .cta-secondary {
+            background: transparent;
+            border: 2px solid #FF6B35;
+            color: #FF6B35;
+        }
+
+        .cta-secondary:hover {
+            background: #FF6B35;
+            color: white;
+        }
+
+        .game-items {
+          padding: 1em;
+          justify-content: center;
+          text-align: center;
+        }
+        .games {
+            position: relative;
+            padding: 150px 40px;
+            background: linear-gradient(180deg, #0f0f0f, #1a1a1a);
+            overflow: hidden;
+        }
+
+        .leaderboard {
+            background: linear-gradient(180deg, #1a1a1a, #0f0f0f);
+        }
+
+        .games .grid {
+          position: relative;
+          z-index: 2;
+        }
+
+        /* Mountain background layers for the games grid */
+        .games::before,
+        .games::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 300px;
+            background-size: cover;
+            opacity: 0.15;
+            animation: mountainDrift 30s linear infinite alternate;
+        }
+
+        .games::before,
+        .games::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 500px;
+            background-size: cover;
+            opacity: 0.5;
+            animation: mountainDrift 30s linear infinite alternate;
+            transform: translateY(var(--parallax-shift, 0px));
+            transition: transform 0.1s ease-out;
+        }
+        /* Back layer (darker) */
+        .games::before {
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23FF6B35' fill-opacity='0.1' d='M0,256L48,229.3C96,203,192,149,288,149.3C384,149,480,203,576,197.3C672,192,768,128,864,122.7C960,117,1056,171,1152,181.3C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+        }
+
+        /* Front layer (lighter, moves at different speed) */
+        .games::after {
+            bottom: -100px;
+            opacity: 0.5;
+            animation-duration: 40s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23FF8C42' fill-opacity='0.15' d='M0,224L48,197.3C96,171,192,117,288,117.3C384,117,480,171,576,176C672,181,768,139,864,128C960,117,1056,139,1152,144C1248,149,1344,128,1392,117.3L1440,107L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+        }
+
+        @keyframes mountainDrift {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-40px); }
+        }
+
+        .box-shadow {
+          bottom: 0 6px 10px rgba(255, 107, 53, 0.4);
+        }
+
+        .bg-styled {
+            background: hsl(25,25,25);
+        }
+
+
+  </style>
+
+</head>
+<body class="bg-styled">
+
+  <!-- HERO SECTION -->
+  <section class="bg-[url('/static/images/jt_sunset.jpg')] bg-cover bg-center bg-no-repeat min-h-screen flex flex-col items-center justify-center text-center">
+    <h1 class="hero-title font-anton text-6xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold mb-4">ROUTEGUESSR</h1>
+    <div class="hero-buttons">
+      <a href="#games" class="cta-button">Start Playing</a>
+      <a href="#leaderboard" class="cta-button cta-secondary">View Leaderboard</a>
+    </div>
+  </section>
+
+<!-- GAME GRID SECTION -->
+<section id="games" class="games min-h-screen flex flex-col items-center justify-center py-32 relative">
+
+  <div class="relative z-10 text-center mb-12">
+    <h2 class="text-3xl sm:text-4xl md:text-5xl font-anton text-white tracking-tight">
+      SELECT GAME MODE
+    </h2>
+    <p class="text-zinc-400 mt-2 text-sm sm:text-base font-pt">
+      Test your climbing knowledge across a variety of different climbing challenges.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl px-6 relative z-10 ">
+    <!-- Card Daily -->
+    <a href="{{ url_for('daily') }}" class="relative overflow-hidden p-6 rounded-xl
+        border border-orange-600/50 bg-zinc-900
+        hover:shadow-[0_0_15px_10px_rgba(255,107,53,0.25)]
+        transition-transform hover:-translate-y-1 cursor-pointer duration-300
+        before:content-[''] before:absolute before:inset-0 before:bg-orange-600/25 before:mix-blend-overlay before:z-0
+        after:content-[''] after:absolute after:top-[1px] after:left-1/2 after:h-[3px] after:w-0
+        after:bg-orange-600 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0 after:ease-in-out sm:col-span-2 block no-underline">
+      <div class="relative z-10">
+        <h3 class="text-white font-anton text-2xl mb-2 text-left">Daily Challenge</h3>
+        <p class="text-zinc-200 text-lg font-pt">
+          Five new images every 24 hours, can you figure out which famous American climbing area they come from? From topos to butt-shots, you have to be solid at the grade to reach a leaderboard high point.
+        </p>
+      </div>
+    </a>
+
+    <!-- Card Legendary Lines -->
+    <a href="{{ url_for('legendary_lines_play') }}" class="relative overflow-hidden p-6 rounded-xl border border-orange-600/50
+    hover:shadow-[0_0_15px_10px_rgba(255,107,53,0.25)]
+    transition-transform hover:-translate-y-1 cursor-pointer duration-300
+    before:content-[''] before:absolute before:inset-0 before:bg-orange-600/0
+    before:mix-blend-overlay before:z-0 hover:before:bg-orange-600/25
+    after:content-[''] after:absolute after:top-[1px] after:left-1/2 after:h-[3px] after:w-0
+    after:bg-orange-600 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0 after:ease-in-out
+    bg-zinc-900 block no-underline">
+    <div class="relative z-10">
+        <h3 class="text-white font-anton text-2xl mb-2 text-left">Legendary Lines</h3>
+        <p class="text-zinc-200 text-lg font-pt">
+          How well do you really know the classics? Pick your favorite climbing area and find out if your knowledge cracks up!
+        </p>
+      </div>
+    </a>
+
+    <!-- Card Free-Play -->
+    <a href="{{ url_for('free_play') }}" class="relative overflow-hidden p-6 rounded-xl border border-orange-600/50
+      hover:shadow-[0_0_15px_10px_rgba(255,107,53,0.25)]
+      transition-transform hover:-translate-y-1 cursor-pointer duration-300
+      before:content-[''] before:absolute before:inset-0 before:bg-orange-600/0
+      before:mix-blend-overlay before:z-0 hover:before:bg-orange-600/25
+      after:content-[''] after:absolute after:top-[1px] after:left-1/2 after:h-[3px] after:w-0
+      after:bg-orange-600 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0 after:ease-in-out bg-zinc-900 block no-underline">
+      <div class="relative z-10">
+        <h3 class="text-white font-anton text-2xl mb-2 text-left">Classic Free Play</h3>
+        <p class="text-zinc-200 text-lg font-pt">
+          Select your favorite area, and play till you get benighted. This is the true test of your area knowledge.
+        </p>
+      </div>
+    </a>
+
+        <!-- Card Trivia -->
+    <div class="relative overflow-hidden p-6 rounded-xl border border-orange-600/50
+      hover:shadow-[0_0_15px_10px_rgba(255,107,53,0.25)]
+      transition-transform hover:-translate-y-1 cursor-pointer duration-300
+      before:content-[''] before:absolute before:inset-0 before:bg-orange-600/0
+      before:mix-blend-overlay before:z-0 hover:before:bg-orange-600/25
+      after:content-[''] after:absolute after:top-[1px] after:left-1/2 after:h-[3px] after:w-0
+      after:bg-orange-600 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0 after:ease-in-out bg-zinc-900">
+      <div class="relative z-10">
+        <h3 class="text-white font-anton text-2xl mb-2 text-left">Climbing Trivia</h3>
+        <p class="text-zinc-200 text-lg font-pt">
+          From the forums to the campfire, do you know the classic stories that prevail throughout climbing history?
+        </p>
+      </div>
+    </div>
+
+    <!-- Card Route Recommender -->
+    <div class="relative overflow-hidden p-6 rounded-xl border border-orange-600/50
+      hover:shadow-[0_0_15px_10px_rgba(255,107,53,0.25)]
+      transition-transform hover:-translate-y-1 cursor-pointer duration-300
+      before:content-[''] before:absolute before:inset-0 before:bg-orange-600/0
+      before:mix-blend-overlay before:z-0 hover:before:bg-orange-600/25
+      after:content-[''] after:absolute after:top-[1px] after:left-1/2 after:h-[3px] after:w-0
+      after:bg-orange-600 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0 after:ease-in-out bg-zinc-900 sm:col-span-2">
+      <div class="relative z-10">
+        <h3 class="text-white font-anton text-2xl mb-2 text-left">Route Recommender</h3>
+        <p class="text-zinc-200 text-lg font-pt">
+          Staring at the guidebook with no plans? Blank stare of anticipation from your partner? Let our recommendation system give you custom suggestions for what your next outage could be!
+        </p>
+      </div>
+    </div>
+
+
+  </div>
+</section>
+
+<!-- Leaderboard -->
+<!-- Leaderboard -->
+<section id="leaderboard" class="leaderboard min-h-screen flex flex-col items-center relative px-4">
+
+  <div class="relative text-center mt-32">
+    <h2 class="text-3xl sm:text-4xl md:text-5xl font-anton text-white tracking-tight">
+      DAILY CHALLENGE LEADERBOARD
+    </h2>
+    <p class="text-zinc-400 mt-2 text-sm sm:text-base font-pt mb-10">
+      Do you have the endurance to achieve a perfect score?
+    </p>
+  </div>
+
+  <div class="relative overflow-hidden p-4 sm:p-6 rounded-xl w-full max-w-6xl
+      border border-orange-600/50 bg-zinc-900
+      before:content-[''] before:absolute before:inset-0 before:bg-orange-600/10 before:mix-blend-overlay before:z-0">
+
+    <div class="relative z-10">
+      <h1 class="text-white font-anton text-2xl text-left mb-6">TOP PLAYERS</h1>
+
+      <!-- Header Row -->
+      <div class="mb-3 px-6 grid grid-cols-[50px_1fr_80px] sm:grid-cols-[60px_1fr_80px_80px_80px_80px_80px_100px] gap-3 sm:gap-4 pb-3 border-b border-zinc-700/50">
+        <div class="text-zinc-500 font-semibold text-xs sm:text-sm uppercase font-pt">RANK</div>
+        <div class="text-zinc-500 font-semibold text-xs sm:text-sm uppercase font-pt">PLAYER</div>
+        <div class="text-zinc-500 font-semibold text-xs sm:text-sm uppercase text-right hidden sm:block font-gabarito">LEVEL 1</div>
+        <div class="text-zinc-500 font-semibold text-xs sm:text-sm uppercase text-right hidden sm:block font-gabarito">LEVEL 2</div>
+        <div class="text-zinc-500 font-semibold text-xs sm:text-sm uppercase text-right hidden sm:block font-gabarito">LEVEL 3</div>
+        <div class="text-zinc-500 font-semibold text-xs sm:text-sm uppercase text-right hidden sm:block font-gabarito">LEVEL 4</div>
+        <div class="text-zinc-500 font-semibold text-xs sm:text-sm uppercase text-right hidden sm:block font-gabarito">LEVEL 5</div>
+        <div class="text-zinc-500 font-semibold text-xs sm:text-sm uppercase text-right font-pt">SCORE</div>
+      </div>
+
+      <!-- Leaderboard Table -->
+      <div class="space-y-3">
+          {% if leaderboard %}
+            {% for attempt in leaderboard %}
+        <!-- Data Rows -->
+            <div class="mb-5 px-6 grid grid-cols-[50px_1fr_80px] sm:grid-cols-[60px_1fr_80px_80px_80px_80px_80px_100px] gap-3 sm:gap-4 p-3 sm:p-7 rounded-lg bg-zinc-900 border border-zinc-700/30 hover:bg-orange-600/5 hover:border-orange-600/50 hover:-translate-y-1 transition-all duration-200 cursor-pointer">
+              <div class="text-zinc-400 font-bold text-lg sm:text-xl">{{ loop.index }}</div>
+              <div class="text-white font-semibold">{{ attempt.user.username }}</div>
+              <div class="text-zinc-500 text-right opacity-40 self-center hidden sm:block">{{ "{:,}".format(attempt.level_scores[0]) }}</div>
+              <div class="text-zinc-500 text-right opacity-40 self-center hidden sm:block">{{ "{:,}".format(attempt.level_scores[1]) }}</div>
+              <div class="text-zinc-500 text-right opacity-40 self-center hidden sm:block">{{ "{:,}".format(attempt.level_scores[2]) }}</div>
+              <div class="text-zinc-500 text-right opacity-40 self-center hidden sm:block">{{ "{:,}".format(attempt.level_scores[3]) }}</div>
+              <div class="text-zinc-500 text-right opacity-40 self-center hidden sm:block">{{ "{:,}".format(attempt.level_scores[4]) }}</div>
+              <div class="text-orange-500 font-bold text-lg sm:text-xl text-right self-center">{{ "{:,}".format(attempt.total_score) }}</div>
+            </div>
+            {% endfor %}
+          {% else %}
+          {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="bg-zinc-950 border-t border-zinc-800 py-8">
+  <div class="max-w-6xl mx-auto px-4">
+    <!-- Navigation Links -->
+    <nav class="flex justify-center gap-8 mb-4">
+      <a href="#about" class="text-zinc-400 hover:text-white transition-colors duration-200 font-gabarito">About</a>
+      <a href="#contact" class="text-zinc-400 hover:text-white transition-colors duration-200 font-gabarito">Contact</a>
+      <a href="#privacy" class="text-zinc-400 hover:text-white transition-colors duration-200 font-gabarito">Privacy</a>
+      <a href="#terms" class="text-zinc-400 hover:text-white transition-colors duration-200 font-gabarito">Terms</a>
+      <a href="#blog" class="text-zinc-400 hover:text-white transition-colors duration-200 font-gabarito">GitHub</a>
+    </nav>
+
+    <!-- Copyright Text -->
+    <p class="text-zinc-500 text-sm text-center font-gabarito">
+      2025 RouteGuessr. Test your climbing knowledge daily.
+    </p>
+  </div>
+</footer>
+
+
+<script>
+  window.addEventListener("scroll", () => {
+    const scrollY = window.scrollY;
+    const gamesSection = document.querySelector(".games");
+    if (!gamesSection) return;
+
+    // Calculate scroll offset (adjust multiplier for stronger or weaker effect)
+    const offset = scrollY * 1;
+
+    // Apply CSS variable for parallax movement
+    gamesSection.style.setProperty("--parallax-shift", `${offset}px`);
+  });
+</script>
+</body>
+</html>
