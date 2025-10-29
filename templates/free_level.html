@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROUTEGUESSR</title>
+
+    <!-- Include the CesiumJS JavaScript and CSS files -->
+    <link href="{{ url_for('static', filename='styles/classic_level.css')}}" rel="stylesheet"/>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.134/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.134/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+    <div class="gradient-layer"></div>
+    <div class="particle-container" id="particleContainer"></div>
+    <div class="background-layer"></div>
+
+    <a class="gradient-title anton-regular" href="/">ROUTEGUESSR</a>
+    <div class="badge">
+        <div class="label">Round &nbsp; Score</div>
+        <div class="values">{{ level }}/5 &nbsp; &nbsp; {{ current_total }} </div>
+    </div>
+
+    <div class="loading" id ="loading"></div>
+
+    <div class="image-container" id="imageContainer">
+        <img id="dynamicImage" src="" alt="Loading Image..." class="text-white">
+    </div>
+
+    <!-- Map Window -->
+    <div class="map-window" id="mapWindow">
+        <div class="hover-hint">Hover to expand map</div>
+        <div id="cesiumContainer">
+            <button id="resetNorthButton" title="Reset camera to face north">
+                <img src="{{ url_for('static', filename='/images/nav-reset.svg') }}" alt="">
+            </button>
+            <div class="submit-container" id="submitContainer">
+                <button class="submit" id="submitButton">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const IMAGE_URL = '{{ image_url }}';
+        const LEVEL = {{ level }};
+        const PIN_ICON = "{{ url_for('static', filename='images/user_pin.svg') }}";
+        const CESIUM_KEY = "{{ cesium_key }}";
+    </script>
+    <script src="{{ url_for('static', filename='scripts/classic_mode.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/image_resize.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='scripts/cesium_level_free.js') }}"></script>
+    <script>
+        const container = document.getElementById('cesiumContainer');
+
+        container.addEventListener('mousedown', () => {
+            container.classList.add('grabbing');
+        });
+
+        document.addEventListener('mouseup', () => {
+            container.classList.remove('grabbing');
+        });
+
+        function adjustMobileSpacing() {
+            if (window.innerWidth <= 1024) {
+                const middleBox = document.querySelector('.middle-box');
+                const boxBottom = middleBox.offsetTop + middleBox.offsetHeight;
+                document.body.style.minHeight = (boxBottom + 60) + 'px'; // 60px spacing
+            }
+        }
+
+        window.addEventListener('load', adjustMobileSpacing);
+        document.querySelector('.main-image').addEventListener('load', adjustMobileSpacing);
+        window.addEventListener('resize', adjustMobileSpacing);
+    </script>
+</body>
+</html>

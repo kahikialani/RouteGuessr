@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROUTEGUESSR</title>
+    <link href="{{ url_for('static', filename='styles/classic_end.css')}}" rel="stylesheet"/>
+</head>
+<body>
+<div class="gradient-layer"></div>
+<div class="particle-container" id="particleContainer"></div>
+<div class="background-layer"></div>
+
+<section class="results-page">
+    <div class="header-section">
+        <h1 class="title bebas-neue">DAILY CHALLENGE COMPLETE!</h1>
+        <p class="date">{{ date.strftime('%B %d, %Y') }}</p>
+        <button class="{{ total_score_class }}">
+            <span class="text anton-regular">TOTAL SCORE: {{ total_score }}</span>
+        </button>
+
+    </div>
+    <div class="levels-container">
+        {% for level_num in range(1, 6) %}
+            {% set level = level_data[level_num|string] %}
+            <div class="level-card">
+                <div class="level-header">
+                    <h3>Level {{ level_num }}</h3>
+                    <div class="level-score {{ level.score_class }}">{{ level.score }} points</div>
+                </div>
+
+                <div class="level-content">
+                    <!-- Image Section -->
+                    <div class="image-section">
+                        <img src="{{ level.image_link }}" alt="{{ level.route_name }}">
+                    </div>
+
+                    <!-- Route Info Section -->
+                    <div class="info-section">
+                        <div class="route-name">
+                            <a href="{{ level.route_link }}" target="_blank">{{ level.route_name }}</a>
+                        </div>
+                        <div class="route-details">
+                            <span class="grade">{{ level.route_grade }}</span>
+                            <span class="type">{{ level.route_type }}</span>
+                            <span class="stars">⭐ {{ level.route_stars }}</span>
+                            <span class="length">{{ level.route_length }}ft</span>
+                        </div>
+                        <div class="area-name">{{ level.area_name }}</div>
+
+                        <!-- Distance -->
+                        <div class="distance-info {{ level.score_class }}">
+                            <strong>Your guess:</strong>
+                            {% if level.distance >= 1 %}
+                                {{ "%.2f"|format(level.distance) }} km away
+                            {% else %}
+                                {{ "%.0f"|format(level.distance * 1000) }} m away
+                            {% endif %}
+                        </div>
+
+                        <!-- Coordinates -->
+                        <div class="coordinates">
+                            <div><strong>Actual:</strong> {{ "%.4f"|format(level.route_lat) }}, {{ "%.4f"|format(level.route_lon) }}</div>
+                            <div><strong>Your guess:</strong> {{ "%.4f"|format(level.guess_lat) }}, {{ "%.4f"|format(level.guess_lon) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+    </div>
+
+        <div class="actions">
+            <a href="{{ url_for('home') }}" class="btn btn-primary">View Leaderboard</a>
+            <a href="{{ url_for('home') }}" class="btn btn-secondary">Back to Home</a>
+        </div>
+    </section>
+</body>
+</html>

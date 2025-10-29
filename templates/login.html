@@ -3,7 +3,6 @@
 {% block title %}ROUTEGUESSR{% endblock %}
 
 {% block styles %}
-    <link rel="icon" type="image/png" href="../static/images/ROUTEGUESSR.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -23,11 +22,6 @@
             text-align: center;
             max-width: 400px;
             width: 100%;
-        }
-
-        .login-title {
-            font-size: 2rem;
-            margin-bottom: 10px;
         }
 
         .login-subtitle {
@@ -84,7 +78,7 @@
 {% block content %}
     <div class="login-container">
         <div class="login-box">
-            <h1 class="login-title dela-gothic-one-regular">ROUTEGUESSR</h1>
+            <h1 class="login-title anton-regular">ROUTEGUESSR</h1>
 
             {% with messages = get_flashed_messages() %}
                 {% if messages %}

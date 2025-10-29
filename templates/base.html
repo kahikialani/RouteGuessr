@@ -6,7 +6,6 @@
     <title>{% block title %}ROUTEGUESSR{% endblock %}</title>
 
     <!-- Favicon and Background -->
-    <link rel="preload" href="{{ url_for('static', filename='images/432A1345.jpg') }}" as="image">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ROUTEGUESSR.png') }}">
 
     <!-- Fonts -->
@@ -21,6 +20,11 @@
 
 </head>
 <body>
+    <div class="gradient-layer"></div>
+    <div class="particle-container" id="particleContainer"></div>
+    <div class="background-layer"></div>
+
     {% block content %}{% endblock %}
+    <script src="{{ url_for('static', filename='scripts/classic_mode.js') }}"></script>
 </body>
 </html>

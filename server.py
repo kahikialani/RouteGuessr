@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.mutable import MutableList
 from datetime import date, datetime
 import os
@@ -15,6 +16,7 @@ except Exception as e:
     print("python-dotenv not available")
 
 map_api = os.getenv("MAPS_API_KEY")
+cesium_key = os.getenv("CESIUM_KEY")
 neon_connection = os.getenv("NEON_URL")
 
 app = Flask(__name__)
@@ -272,16 +274,40 @@ def load_user(user_id):
 @app.route("/home")
 def home():
     session.clear()
-    return render_template("home_page.html", user=current_user)
+    today = date.today()
+
+    leaderboard = (DailyAttempt.query.filter_by(
+        challenge_date=today
+    ).filter(
+        DailyAttempt.level_scores.isnot(None),
+        db.func.json_array_length(DailyAttempt.level_scores) == 5
+    ).options (
+        joinedload(DailyAttempt.user)
+    ).order_by(
+        DailyAttempt.total_score.desc()
+    ).all())
+
+    return render_template("index.html",
+                           leaderboard=leaderboard,
+                           date=today,
+                           user=current_user)
 
 @app.after_request
 def add_cache_headers(response):
     # Cache static files
     if request.path.startswith('/static/'):
+        # In development, disable caching for CSS/JS to avoid stale files
+        if os.getenv('RENDER') is None:  # Development mode
+            if any(request.path.endswith(ext) for ext in ['.css', '.js']):
+                response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                response.headers['Pragma'] = 'no-cache'
+                response.headers['Expires'] = '0'
+                return response
+
         # Images get long cache
         if any(request.path.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']):
             response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
-        # CSS and JS get medium cache with revalidation
+        # CSS and JS get medium cache with revalidation in production
         elif any(request.path.endswith(ext) for ext in ['.css', '.js']):
             response.headers['Cache-Control'] = 'public, max-age=86400, must-revalidate'
         # Fonts get long cache
@@ -370,7 +396,7 @@ def daily_level(level):
                            total_levels=5,
                            image_url=image_url,
                            current_total=current_total,
-                           maps_key=map_api)
+                           cesium_key=cesium_key)
 
 @app.route("/daily/level/<int:level>/results")
 @login_required
@@ -449,24 +475,45 @@ def level_results(level):
     # Area name finder
     area_name = ClimbingArea.query.filter_by(id=route.area_id).first().area_name
 
+    if route_type == "TR":
+        route_type_str = "Top Rope"
+    elif route_type == "Trad":
+        route_type_str = "Trad Climb"
+    elif route_type == "Sport":
+        route_type_str = "Sport Climb"
+    elif route_type == "Boulder":
+        route_type_str = "Boulder"
+    else:
+        route_type_str = "Unknown"
 
+    stars = int(route_stars)
+    if stars == 0:
+        stars = "💣"
+    elif stars <= 1.6:
+        stars = "★☆☆☆"
+    elif stars <= 2.6:
+        stars = "★★☆☆"
+    elif stars <= 3.6:
+        stars = "★★★☆"
+    else:
+        stars = "★★★★"
 
-
-    return render_template("daily_level_results.html",
+    return render_template("daily_result.html",
                            level=level,
-                           maps_key=map_api,
+                           cesium_key = cesium_key,
                            total_levels=5,
-                           image_link=image_url,
+                           image_url=image_url,
                            score=score,
                            user_lat=lat_guess,
                            user_lon=lon_guess,
                            distance=distance,
-                           total_score=total_score,
-                           route_name=route_name,
+                           current_total=total_score,
+                           route_name=route_name.upper(),
                            route_link=route_link,
-                           route_type=route_type,
+                           route_type=route_type_str,
                            route_grade=route_grade,
                            route_stars=route_stars,
+                           stars=stars,
                            route_length=route_length,
                            route_lat=route_lat,
                            route_lon=route_lon,
@@ -529,7 +576,7 @@ def daily_results():
         }
     total_score_class = calc.get_total_class(attempt.total_score)
 
-    return render_template("daily_final_results.html",
+    return render_template("daily_end.html",
                            user=current_user,
                            total_score=attempt.total_score,
                            level_data=level_data,
@@ -593,12 +640,12 @@ def free_play_level(level):
 
     total_score = session['total_score']
     logging.debug(session)
-    return render_template("free_play_level.html",
+    return render_template("free_level.html",
                            image_url=image_url,
                            total_levels=5,
                            level=level,
-                           total_score=total_score,
-                           maps_key=map_api)
+                           current_total=total_score,
+                           cesium_key=cesium_key)
 
 @app.route("/free-play/level/<int:level>/results")
 def free_play_results(level):
@@ -661,21 +708,46 @@ def free_play_results(level):
     score = session['level_scores'][int(level) - 1]
     total_score = session['total_score'] + score
     session['total_score'] = total_score
-    return render_template("free_play_level_results.html",
+
+    if route_info.route_type == "TR":
+        route_type_str = "Top Rope"
+    elif route_info.route_type == "Trad":
+        route_type_str = "Trad Climb"
+    elif route_info.route_type == "Sport":
+        route_type_str = "Sport Climb"
+    elif route_info.route_type == "Boulder":
+        route_type_str = "Boulder"
+    else:
+        route_type_str = "Unknown"
+
+    stars = int(route_info.route_stars)
+    if stars == 0:
+        stars = "💣"
+    elif stars <= 1.6:
+        stars = "★☆☆☆"
+    elif stars <= 2.6:
+        stars = "★★☆☆"
+    elif stars <= 3.6:
+        stars = "★★★☆"
+    else:
+        stars = "★★★★"
+
+    return render_template("free_result.html",
                            level=level,
-                           maps_key=map_api,
+                           cesium_key=cesium_key,
                            total_levels=5,
-                           image_link = image_info.image_link,
+                           image_url = image_info.image_link,
                            score = score,
                            user_lat = user_lat,
                            user_lon = user_lon,
                            distance = session['distances'][int(level) - 1],
-                           total_score = total_score,
-                           route_name = route_info.route_name,
+                           current_total = total_score,
+                           route_name = route_info.route_name.upper(),
                            route_link = route_info.route_link,
-                           route_type = route_info.route_type,
+                           route_type = route_type_str,
                            route_grade = route_info.route_grade,
                            route_stars = route_info.route_stars,
+                           stars = stars,
                            route_length = route_info.route_length,
                            route_lat = route_info.route_lat,
                            route_lon = route_info.route_lon,
@@ -878,4 +950,4 @@ if __name__ == '__main__':
         with app.app_context():
             db.create_all()
             print("Database initialized")
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=8002, debug=True)

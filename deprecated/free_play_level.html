@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}ROUTEGUESSR{% endblock %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='styles/free_play_level.css') }}" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+    <div class="logo-container">
+        <a href="/" class="logo-link">
+            <img src="{{ url_for('static', filename='images/ROUTEGUESSR.png') }}" alt="RouteGuessr Logo" class="logo">
+        </a>
+    </div>
+    <div class="score-card">
+        <h2>Level: {{ level }}/{{ total_levels }}</h2>
+        <h2>Score: {{ total_score }}</h2>
+    </div>
+
+<div class="blur-background" id="blurBg"></div>
+
+<div class="image-container">
+    <img class="main-image" id="mainImage" alt="">
+    <div class="map-overlay" id="mapOverlay">
+        <div id="map"></div>
+        <div class="map-controls">
+            <div class="map-instructions" id="mapInstructions">
+                Click anywhere on the map to place your guess marker
+            </div>
+            <button class="submit-btn" id="submitBtn" onclick="submitGuess()">
+                Submit
+            </button>
+        </div>
+    </div>
+    <div class="image-icon" id="imageIcon">
+        <img src="{{ url_for('static', filename='images/mountainmap.png') }}" alt="Icon">
+    </div>
+</div>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ maps_key }}&callback=initMap" async defer></script>
+<script>
+let map;
+let guessMarker = null;
+let guessCoordinates = null;
+let mapExpanded = false;
+let mapInitialized = false;
+let savedMapState = {
+    center: { lat: 39.8283, lng: -98.5795 },
+    zoom: 4
+};
+
+const IMAGE_URL = '{{ image_url }}';
+const level = {{ level }};
+
+function initMap() {
+    const mapOptions = {
+        center: savedMapState.center,
+        zoom: savedMapState.zoom,
+        streetViewControl: false,
+        rotateControl: false,
+        fullscreenControl: false,
+        clickableIcons: false,
+        mapTypeControl: false,
+        mapTypeId: google.maps.MapTypeId.HYBRID,
+        scaleControl: false,
+        disableDefaultUi: true,
+        mapTypeControlOptions: {
+            mapTypeIds: []
+        }
+    };
+
+    map = new google.maps.Map(document.getElementById('map'), mapOptions);
+    mapInitialized = true;
+
+    map.addListener('click', function(event) {
+        placePin(event.latLng);
+    });
+}
+
+function calculateImageSize(img) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const padding = 0.02;
+    const availableWidth = vw * (1 - padding);
+    const availableHeight = vh * (1 - padding);
+
+    const imgRatio = img.naturalWidth / img.naturalHeight;
+    const screenRatio = availableWidth / availableHeight;
+
+    let width, height;
+
+    if (imgRatio > screenRatio) {
+        width = availableWidth;
+        height = availableWidth / imgRatio;
+    } else {
+        height = availableHeight;
+        width = availableHeight * imgRatio;
+    }
+
+    img.style.width = width + 'px';
+    img.style.height = height + 'px';
+
+    const blurBg = document.getElementById('blurBg');
+    const borderSize = 30;
+    blurBg.style.width = (width + borderSize) + 'px';
+    blurBg.style.height = (height + borderSize) + 'px';
+
+    const icon = document.getElementById('imageIcon');
+    if (icon) {
+        const imgRect = img.getBoundingClientRect();
+        const iconOffset = 20;
+        icon.style.left = (imgRect.left + imgRect.width - icon.offsetWidth - iconOffset) + 'px';
+        icon.style.top = (imgRect.top + imgRect.height - icon.offsetHeight - iconOffset) + 'px';
+        icon.style.opacity = '1';
+    }
+
+    const imgRect = img.getBoundingClientRect();
+    window.imageDimensions = {
+        left: imgRect.left,
+        top: imgRect.top,
+        width: imgRect.width,
+        height: imgRect.height
+    };
+}
+
+function showMap() {
+    const mapOverlay = document.getElementById('mapOverlay');
+    const mapIcon = document.getElementById('imageIcon');
+
+    if (!window.imageDimensions) return;
+
+    mapOverlay.style.left = window.imageDimensions.left + 'px';
+    mapOverlay.style.top = window.imageDimensions.top + 'px';
+    mapOverlay.style.width = window.imageDimensions.width + 'px';
+    mapOverlay.style.height = window.imageDimensions.height + 'px';
+
+    mapExpanded = true;
+    mapOverlay.classList.add('expanded');
+
+    if (mapIcon) {
+        mapIcon.style.opacity = '0';
+        mapIcon.style.pointerEvents = 'none';
+    }
+
+    if (!mapInitialized && typeof google !== 'undefined' && google.maps) {
+        initMap();
+    }
+
+    if (mapInitialized && map) {
+        setTimeout(() => {
+            google.maps.event.trigger(map, 'resize');
+            map.setCenter(savedMapState.center);
+            map.setZoom(savedMapState.zoom);
+        }, 100);
+    }
+}
+
+function hideMap() {
+    const mapOverlay = document.getElementById('mapOverlay');
+    const mapIcon = document.getElementById('imageIcon');
+
+    if (mapInitialized && map) {
+        savedMapState.center = map.getCenter().toJSON();
+        savedMapState.zoom = map.getZoom();
+    }
+
+    mapExpanded = false;
+    mapOverlay.classList.remove('expanded');
+
+    if (mapIcon) {
+        mapIcon.style.opacity = '1';
+        mapIcon.style.pointerEvents = 'auto';
+    }
+}
+
+function placePin(location) {
+    if (guessMarker) {
+        guessMarker.setMap(null);
+    }
+
+    guessMarker = new google.maps.Marker({
+        position: location,
+        map: map,
+        title: "Your Guess"
+    });
+
+    guessCoordinates = {
+        lat: location.lat(),
+        lng: location.lng()
+    };
+
+    const submitBtn = document.getElementById('submitBtn');
+    const instructions = document.getElementById('mapInstructions');
+    if (submitBtn) submitBtn.classList.add('visible');
+    if (instructions) instructions.classList.add('hidden');
+
+    console.log("Pin placed at:", guessCoordinates);
+}
+
+function submitGuess() {
+    if (!guessCoordinates) {
+        alert('Please place a pin on the map first!');
+        return;
+    }
+
+    fetch('/api/submit-free-play', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            level: level,
+            guess_lat: guessCoordinates.lat,
+            guess_lon: guessCoordinates.lng
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            window.location.href = `/free-play/level/${level}/results`;
+        } else {
+            alert(data.error || 'Error submitting guess');
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        alert('Failed to submit guess');
+    });
+}
+
+window.addEventListener('load', function() {
+    const mainImage = document.getElementById('mainImage');
+    const mapIcon = document.getElementById('imageIcon');
+    const mapOverlay = document.getElementById('mapOverlay');
+
+    if (typeof google !== 'undefined' && google.maps) {
+        initMap();
+    } else {
+        window.initMap = initMap;
+    }
+
+    mainImage.src = IMAGE_URL;
+    mainImage.onload = function() {
+        calculateImageSize(mainImage);
+    };
+
+    mapIcon.addEventListener('mouseenter', function() {
+        showMap();
+    });
+
+    mapIcon.addEventListener('mouseleave', function(e) {
+        const toElement = e.relatedTarget;
+        if (!mapOverlay.contains(toElement)) {
+            hideMap();
+        }
+    });
+
+    mapIcon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (mapExpanded) {
+            hideMap();
+        } else {
+            showMap();
+        }
+    });
+
+    mapOverlay.addEventListener('mouseenter', function() {
+    });
+
+    mapOverlay.addEventListener('mouseleave', function() {
+        hideMap();
+    });
+
+    mapOverlay.addEventListener('click', function(e) {
+        if (e.target === mapOverlay) {
+            hideMap();
+        }
+    });
+});
+
+window.addEventListener('resize', function() {
+    const mainImage = document.getElementById('mainImage');
+    if (mainImage.complete && mainImage.naturalHeight !== 0) {
+        calculateImageSize(mainImage);
+        if (mapExpanded) {
+            showMap();
+        }
+    }
+});
+    </script>
+{% endblock %}
+

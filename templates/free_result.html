@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROUTEGUESSR - DAILY LEVEL RESULTS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/classic_result.css') }}">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.134/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.134/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+    <div class="gradient-layer"></div>
+    <div class="particle-container" id="particleContainer"></div>
+    <div class="background-layer"></div>
+
+    <a class="gradient-title anton-regular" href="/">ROUTEGUESSR</a>
+    {% if level < total_levels %}
+        <button class="mobile-next anton-regular" onclick="nextLevel()">
+            NEXT
+        </button>
+    {% else %}
+        <button class="mobile-next anton-regular" onclick="finishChallenge()">
+            View Final Results
+        </button>
+    {% endif %}
+
+    <div class="badge">
+        <div class="label">Round &nbsp; Score</div>
+        <div class="values">{{ level }} /5 &nbsp; &nbsp; {{ current_total }}</div>
+    </div>
+    <div class="middle-box">
+        <div class="content">
+            <div class="main-image-container">
+                <img class="main-image" src="{{ image_url }}" alt="Climbing Route">
+            </div>
+            <div class="right-column">
+                <div class="route-info-card">
+                    <a target="_blank" rel="noopener noreferrer" href="{{ route_link }}">{{ route_name }}</a>
+                    <div class="route-details">
+                        <p class="info-text italic"> {{ area_name }}</p>
+                        <p class="info-text"><span>{{ route_grade }}</span> • {{ route_type }} • {{ route_length }} ft tall • <span>{{ stars }} {{ route_stars }}</span></p>
+                        <p class="mobile-distance">Your guess was {{ distance_str }} away!!</p>
+                    </div>
+                </div>
+                <div id="cesiumContainer">
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="score-footer">
+
+        <div class="guess-distance">
+            Your guess was {{ distance_str }} away from the true location!
+        </div>
+
+        <div class="bar-and-button-row">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+                <div class="score-display">
+                    <h3 id="scoreValue" class="anton-regular"></h3>
+                </div>
+            </div>
+                {% if level < total_levels %}
+                    <button class="next-button anton-regular" onclick="nextLevel()">
+                        NEXT
+                    </button>
+                {% else %}
+                    <button class="next-button anton-regular" onclick="finishChallenge()">
+                        View Final Results
+                    </button>
+                {% endif %}
+        </div>
+    </footer>
+
+    </footer>
+    <script>
+        const CESIUM_KEY = '{{ cesium_key }}';
+        const USER_LON = {{ user_lon }};
+        const USER_LAT =  {{ user_lat }};
+        const ACTUAL_LON = {{ route_lon }};
+        const ACTUAL_LAT = {{ route_lat }};
+        const ZOOM = 4000;
+        const CENTER_LON = {{ avg_lon }};
+        const CENTER_LAT = {{ avg_lat }};
+        const PIN_ICON = "{{ url_for('static', filename='/images/user_pin.svg') }}";
+        const ACTUAL_POINT_ICON = "{{ url_for('static', filename='/images/route_pin.svg') }}";
+
+    </script>
+    <script src="{{ url_for('static', filename='/scripts/classic_mode.js') }}"></script>
+    <script src="{{ url_for('static', filename='/scripts/cesium_result.js') }}"></script>
+    <script>
+        const score = {{ score }};
+        const maxScore = 5000;
+        const percentage = (score / maxScore) * 100;
+
+        document.getElementById("scoreValue").innerText = `${score} / ${maxScore}`;
+
+        const progressFill = document.getElementById("progressFill");
+        progressFill.style.width = "0%";
+
+        setTimeout(() => {progressFill.style.width = percentage + "%";}, 100);
+
+        const container = document.getElementById('cesiumContainer');
+
+        container.addEventListener('mousedown', () => {
+            container.classList.add('grabbing');
+        });
+
+        document.addEventListener('mouseup', () => {
+            container.classList.remove('grabbing');
+        });
+
+        function adjustMobileSpacing() {
+            if (window.innerWidth <= 1024) {
+                const middleBox = document.querySelector('.middle-box');
+                const boxBottom = middleBox.offsetTop + middleBox.offsetHeight;
+                document.body.style.minHeight = (boxBottom + 60) + 'px'; // 60px spacing
+            }
+        }
+
+        window.addEventListener('load', adjustMobileSpacing);
+        document.querySelector('.main-image').addEventListener('load', adjustMobileSpacing);
+        window.addEventListener('resize', adjustMobileSpacing);
+    </script>
+    <script>
+        function nextLevel() {
+            window.location.href = `/free-play/level/{{ level + 1 }}`;
+        }
+
+        function finishChallenge() {
+            window.location.href = `/free-play/results`;
+        }
+    </script>
+</body>
+</html>
