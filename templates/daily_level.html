@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROUTEGUESSR</title>
+    <title>ROUTEGUESSR - DAILY</title>
     
     <!-- Include the CesiumJS JavaScript and CSS files -->
     <link href="{{ url_for('static', filename='styles/classic_level.css')}}" rel="stylesheet"/>
@@ -29,13 +29,36 @@
 
     <!-- Map Window -->
     <div class="map-window" id="mapWindow">
-        <div class="hover-hint">Hover to expand map</div>
+        <div class="hover-hint"><span id="hoverText">Hover</span> to expand map</div>
+        <button id="fullscreenMapButton" title="Toggle fullscreen map">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path class="expand-icon" d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                <path class="collapse-icon" style="display: none;" d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+            </svg>
+        </button>
         <div id="cesiumContainer">
-            <button id="resetNorthButton" title="Reset camera to face north">
-                <img src="{{ url_for('static', filename='/images/nav-reset.svg') }}" alt="">
-            </button>
+            <!-- Expandable menu container -->
+            <div class="map-controls-menu" id="mapControlsMenu">
+                <button class="menu-toggle" id="menuToggle" title="Map options">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="menu-options" id="menuOptions">
+                    <button class="menu-option" id="resetNorthButton" title="Reset camera to face north">
+                        <img src="{{ url_for('static', filename='images/nav-reset.svg') }}" alt="">
+                        <span>Reset North</span>
+                    </button>
+                    <button class="menu-option" id="toggleMapTypeButton" title="Switch map type">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 6h4v12H3V6zm7-3h4v18h-4V3zm7 6h4v12h-4V9z" fill="currentColor"/>
+                        </svg>
+                        <span id="mapTypeLabel">Satellite</span>
+                    </button>
+                </div>
+            </div>
             <div class="submit-container" id="submitContainer">
-                <button class="submit" id="submitButton">Submit</button>
+                <button class="submit" id="submitButton">SUBMIT</button>
             </div>
         </div>
     </div>
@@ -63,14 +86,69 @@
         function adjustMobileSpacing() {
             if (window.innerWidth <= 1024) {
                 const middleBox = document.querySelector('.middle-box');
-                const boxBottom = middleBox.offsetTop + middleBox.offsetHeight;
-                document.body.style.minHeight = (boxBottom + 60) + 'px'; // 60px spacing
+                if (middleBox) {
+                    const boxBottom = middleBox.offsetTop + middleBox.offsetHeight;
+                    document.body.style.minHeight = (boxBottom + 60) + 'px'; // 60px spacing
+                }
             }
         }
 
         window.addEventListener('load', adjustMobileSpacing);
-        document.querySelector('.main-image').addEventListener('load', adjustMobileSpacing);
+        const mainImage = document.querySelector('.main-image');
+        if (mainImage) {
+            mainImage.addEventListener('load', adjustMobileSpacing);
+        }
         window.addEventListener('resize', adjustMobileSpacing);
+
+
+
+        const hoverHint = document.querySelector('.hover-hint');
+        const mapWindow = document.querySelector('.map-window');
+
+        mapWindow.addEventListener('mouseenter', function() {
+            if (hoverHint) {
+                hoverHint.style.display = 'none';
+                hoverHint.style.opacity = '0';
+                hoverHint.style.visibility = 'hidden';
+            }
+        });
+
+        if (hoverHint) {
+            hoverHint.addEventListener('animationend', function() {
+                hoverHint.style.display = 'none';
+            });
+        }
+        if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            document.getElementById('hoverText').textContent = 'Tap';
+        }
+
+
+        const fullscreenMapButton = document.getElementById('fullscreenMapButton');
+        let isFullscreen = false;
+        const gradientTitle = document.querySelector('.gradient-title');
+
+
+        fullscreenMapButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            isFullscreen = !isFullscreen;
+
+            if (isFullscreen) {
+                mapWindow.classList.add('fullscreen');
+                mapWindow.style.pointerEvents = 'auto';
+                if (gradientTitle) {
+                    gradientTitle.style.opacity = '0';
+                    gradientTitle.style.pointerEvents = 'none';
+                }
+            } else {
+                mapWindow.classList.remove('fullscreen');
+                mapWindow.style.pointerEvents = '';
+                if (gradientTitle) {
+                    gradientTitle.style.opacity = '';
+                    gradientTitle.style.pointerEvents = '';
+                }
+
+            }
+        });
     </script>
 </body>
 </html>
