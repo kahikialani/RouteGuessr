@@ -146,8 +146,8 @@ body::after {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 120%;
+    height: 120%;
     background: url("../images/YosemitePNG.png");
     background-position: center;
     background-repeat: no-repeat;
@@ -255,7 +255,6 @@ body::after {
     left: 50%;
     transform: translate(-50%, -50%);
     color: var(--clr-text-white);
-    font-family: system-ui, -apple-system, sans-serif;
 }
 
 .map-window {
@@ -284,25 +283,37 @@ body::after {
 
 @media (min-width: 1920px) {
     .map-window {
-        width: 300px;
+        width: 350px;
         height: 250px;
     }
 
     .map-window:hover {
-        width: 900px;
-        height: 650px;
+        width: 1000px;
+        height: 750px;
+    }
+}
+
+@media (min-width: 1921px) {
+    .map-window {
+        width: 350px;
+        height: 250px;
+    }
+
+    .map-window:hover {
+        width: 1150px;
+        height: 825px;
     }
 }
 
 @media (min-width: 1024px) and (max-width: 1919px) {
     .map-window {
-        width: 240px;
-        height: 180px;
+        width: 280px;
+        height: 200px;
     }
 
     .map-window:hover {
-        width: 550px;
-        height: 400px;
+        width: 900px;
+        height: 650px;
     }
 }
 
@@ -332,90 +343,201 @@ body::after {
     pointer-events: none;
 }
 
-.submit-container.visible {
+.map-window:hover .submit-container.visible {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
 }
 
+/* Keep it hidden when map is not hovered, even if visible class is present */
+.submit-container.visible {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+
 .submit {
-    background: var(--clr-box-background);
+    background: linear-gradient(135deg, #FF6B35, #F7931E);
     border: var(--brdr);
     border-radius: 8px;
     color: white;
-    padding: 10px 24px;
-    font-size: 14px;
-    font-weight: 600;
+    padding: .5rem 2rem;
+    font-size: 1.2rem;
+    font-weight: 100;
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: system-ui, -apple-system, sans-serif;
-    box-shadow: var(--box-shadow)
+    font-family: "Anton", sans-serif;
+    letter-spacing: 0.07em;
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+@media (max-width: 1023px) {
+    .map-window {
+        width: 180px;
+        height: 140px;
+    }
+    .submit {
+        padding: .3rem 1rem;
+        font-size: 0.95rem;
+    }
+}
+
+.submit::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.5s, height 0.5s;
+}
+
+.submit:hover::before {
+    width: 250px;
+    height: 200px;
 }
 
 .submit:hover {
-    background: var(--clr-primary-opacity);
+    background: linear-gradient(180deg, var(--clr-accent), var(--clr-primary));
     border-color: var(--brand-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
 }
 
 .submit:active {
     transform: translateY(0);
 }
 
-#resetNorthButton {
+.map-controls-menu {
     position: absolute;
     top: 10px;
     right: 10px;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.map-window:hover .map-controls-menu {
+    opacity: 1;
+}
+
+.menu-toggle {
     background: var(--clr-box-background);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     color: var(--clr-text-white);
-    padding: 8px 8px;
+    padding: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    z-index: 1000;
-    opacity: 0;
     display: flex;
     align-items: center;
-
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
 }
 
-.map-window:hover #resetNorthButton {
-    opacity: 1;
+.menu-toggle svg {
+    transition: transform 0.3s ease;
 }
 
-#resetNorthButton:hover {
+.menu-toggle:hover {
     background: var(--clr-primary-opacity);
-    border-color: var(--brand-primary);
-    transform: translateY(-2px);
+    border-color: var(--clr-primary);
     box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
-#resetNorthButton:active {
-    transform: translateY(0);
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-controls-menu.expanded .menu-options {
+    max-width: 200px;
+    opacity: 1;
+}
+
+.menu-option {
+    background: var(--clr-box-background);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--clr-text-white);
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.menu-option img {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.menu-option svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.menu-option:hover {
+    background: var(--clr-primary-opacity);
+    border-color: var(--clr-primary);
+    transform: translateX(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.menu-option:active {
+    transform: translateX(0);
 }
 
 .hover-hint {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: var(--clr-cards);
-    color: var(--clr-text-white);
-    opacity: 60%;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
-    pointer-events: none;
-    transition: opacity 0.3s;
-    z-index: 10;
-    border: var(--brdr);
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--clr-cards);
+      color: var(--clr-text-white);
+      opacity: 60%;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 10;
+      border: var(--brdr);
+      animation: fadeOutAfterDelay 11s forwards;
 }
 
-.map-window:hover .hover-hint {
-    opacity: 0;
+@keyframes fadeOutAfterDelay {
+    0%, 90.9% {
+          opacity: 0.6;
+    }
+    100% {
+          opacity: 0;
+    }
 }
+
+
 
 .map-window:hover #resetNorthButton {
     opacity: 100;
@@ -427,9 +549,8 @@ body::after {
         height: 140px;
     }
     .map-window:hover {
-        width: min(450px, 80vw);
-        height: min(350px, 50vh);
-
+        width: 92vw !important;
+        height: min(350px, 40vh) !important;
     }
 
 }
@@ -451,8 +572,77 @@ body::after {
         opacity: 15%;
         filter: blur(1px);
     }
+    .hover-hint {
+        opacity: 0%;
+        display: none;
+    }
 
 }
+
+#fullscreenMapButton {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--clr-box-background);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: var(--clr-text-white);
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      opacity: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+}
+
+.map-window:hover #fullscreenMapButton {
+      opacity: 1;
+}
+
+#fullscreenMapButton:hover {
+      background: var(--clr-primary-opacity);
+      border-color: var(--brand-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+#fullscreenMapButton:active {
+      transform: translateY(0);
+}
+
+/* Fullscreen state */
+.map-window.fullscreen {
+      width: 98vw !important;
+      height: 96vh !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 1023px) {
+    .map-window.fullscreen {
+        width: 92vw !important;
+        height: 90vh !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}
+
+.map-window.fullscreen #fullscreenMapButton {
+      opacity: 1;
+}
+
+/* Show fullscreen button always when in fullscreen mode */
+
+.map-window.fullscreen #fullscreenMapButton .collapse-icon {
+      display: block;
+}
+
+.map-window.fullscreen ~ .gradient-title {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
 
 .gradient-title {
     background-image: linear-gradient(0deg, var(--clr-primary), var(--clr-accent));
@@ -463,6 +653,7 @@ body::after {
     top: 1vh;
     left: 1vw;
     font-size: 3rem;
+    transition: opacity 0.3s ease;
 }
 
 .gradient-title:hover {
@@ -474,7 +665,7 @@ body::after {
     color: var(--clr-text-white);
     font-family: "Gabarito", sans-serif;
     clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);
-    z-index: 105;
+    z-index: 2000;
     position: absolute;
     padding-right: 25px;
     padding-left: 15px;
@@ -493,10 +684,53 @@ body::after {
     font-weight: bold;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1023px) {
     .badge {
-        top: 13vh;
+        top: 50vh;
+        background: linear-gradient(0deg, var(--clr-primary), var(--clr-accent));
+        color: var(--clr-text-white);
+        font-family: "Gabarito", sans-serif;
+        clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);
+        z-index: 104;
+        position: absolute;
+        padding-right: 25px;
+        padding-left: 15px;
+        font-size: 1px;
+        left: 0px;
+        top: 40vh;
     }
+    .label {
+        font-size: 0.6rem;
+        opacity: 0.8;
+    }
+
+    .values {
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+
+
+    body::after,
+    .gradient-layer,
+    .background-layer {
+      animation: none !important;
+    }
+
+    .image-container {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    .background-layer {
+      filter: none !important;
+      opacity: 10%;
+    }
+
+    .particle {
+      display: none;
+    }
+
 }
 
 

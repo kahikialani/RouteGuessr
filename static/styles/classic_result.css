@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=BBH+Sans+Hegarty&family=Gabarito:wght@400..900&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=BBH+Sans+Hegarty&family=Bebas+Neue&family=Gabarito:wght@400..900&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 :root {
     --clr-base: hsl(0 0 0);
@@ -39,12 +39,6 @@ html, body {
 
 .anton-regular {
   font-family: "Anton", sans-serif;
-  font-weight: 400;
-  font-style: normal;
-}
-
-.bbh-sans-hegarty-regular {
-  font-family: "BBH Sans Hegarty", sans-serif;
   font-weight: 400;
   font-style: normal;
 }
@@ -149,8 +143,8 @@ body::after {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 120%;
+    height: 120%;
     background: url("../images/YosemitePNG.png");
     background-position: center;
     background-repeat: no-repeat;
@@ -239,6 +233,8 @@ body::after {
     top: 1vh;
     left: 1vw;
     font-size: 3rem;
+    transition: opacity 0.3s ease;
+
 }
 
 .gradient-title:hover {
@@ -359,7 +355,7 @@ body::after {
 /* Cesium Map Container */
 #cesiumContainer {
     width: 100%;
-    height: 70vh;
+    height: 60vh;
     position: relative;
     background: var(--clr-box-background);
     border-radius: 12px;
@@ -374,6 +370,102 @@ body::after {
 
 #cesiumContainer.grabbing {
     cursor: grabbing !important;
+}
+
+.map-controls-menu {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.map-window:hover .map-controls-menu {
+    opacity: 1;
+}
+
+.menu-toggle {
+    background: var(--clr-box-background);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--clr-text-white);
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+}
+
+.menu-toggle svg {
+    transition: transform 0.3s ease;
+}
+
+.menu-toggle:hover {
+    background: var(--clr-primary-opacity);
+    border-color: var(--clr-primary);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-controls-menu.expanded .menu-options {
+    max-width: 200px;
+    opacity: 1;
+}
+
+.menu-option {
+    background: var(--clr-box-background);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--clr-text-white);
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.menu-option img {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.menu-option svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.menu-option:hover {
+    background: var(--clr-primary-opacity);
+    border-color: var(--clr-primary);
+    transform: translateX(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.menu-option:active {
+    transform: translateX(0);
 }
 
 /* Progress Bar */
@@ -476,7 +568,7 @@ body::after {
     }
 
     #cesiumContainer {
-        height: 280px;
+        height: 280px !important;
     }
 }
 
@@ -538,23 +630,44 @@ body::after {
 
 /* Next Button */
 .next-button {
-    background: var(--clr-box-background);
+    font-family: "Anton", sans-serif;
+    background: linear-gradient(135deg, #FF6B35, #F7931E);
     border: var(--brdr);
-    border-radius: 8px;
+    border-radius: 30px;
     color: white;
-    padding: 10px 24px;
-    font-size: 14px;
-    font-weight: 300;
+    padding: clamp(5px, 2vw, 10px) clamp(25px, 1vw, 30px);
+    font-size: 1.2rem;
+    font-weight: 100;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: var(--box-shadow)
+    overflow: hidden;
+    transition: all 0.5s ease;
+    box-shadow: var(--box-shadow);
+    letter-spacing: 0.07em;
+}
+
+.next-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.5s, height 0.5s;
+}
+
+.next-button:hover::before {
+    width: 250px;
+    height: 200px;
 }
 
 .next-button:hover {
     background: linear-gradient(180deg, var(--clr-accent), var(--clr-primary));
     border-color: var(--brand-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
 }
 
 .guess-distance {
@@ -591,29 +704,49 @@ a {
 
 
 .mobile-next {
-    background: var(--clr-base);
-    border: var(--brdr);
     font-family: "Anton", sans-serif;
-    border-radius: 8px;
+    background: linear-gradient(135deg, #FF6B35, #F7931E);
+    border: var(--brdr);
+    border-radius: 30px;
     color: white;
     position: absolute;
     top: 4.5rem;
     right: 15px;
     opacity: 0;
-    padding: 7px 20px;
+    padding: clamp(5px, 1vw, 5px) clamp(20px, 1vw, 15px);
     font-size: 16px;
-    font-weight: 300;
+    font-weight: 100;
+    letter-spacing: 0.07em;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.5s ease;
     box-shadow: var(--box-shadow);
     z-index: 200;
+    overflow: hidden;
+}
+
+.mobile-next::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.5s, height 0.5s;
+}
+
+.mobile-next:hover::before {
+    width: 200px;
+    height: 200px;
 }
 
 .mobile-next:hover {
     background: linear-gradient(180deg, var(--clr-accent), var(--clr-primary));
-    border-color: var(--brdr);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    border-color: var(--brand-primary);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
 }
 
 .mobile-footer {
@@ -661,6 +794,7 @@ a {
         clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);
         padding-right: 15px;
         padding-left: 20px;
+        z-index: 200;
     }
     .label {
         font-size: 0.8rem;
@@ -669,7 +803,7 @@ a {
         font-size: 1rem;
     }
 
-    .middle-box { /* Adjusted for title + badge */
+    .middle-box {
         position: absolute;
         width: 95vw;
         top: 125px;
@@ -699,11 +833,34 @@ a {
 
     #cesiumContainer {
         width: 100%;
-        height: 40vh;
+        height: 90vh;
     }
 
     .score-footer {
         opacity: 0;
+    }
+
+}
+
+@media (max-width: 1023px) {
+    body::after,
+    .gradient-layer,
+    .background-layer {
+      animation: none !important;
+    }
+
+    .image-container {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    .background-layer {
+      filter: none !important;
+      opacity: 10%;
+    }
+
+    .particle {
+      display: none;
     }
 
 }
