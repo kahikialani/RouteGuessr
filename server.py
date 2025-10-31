@@ -551,7 +551,7 @@ def daily_results():
         route = getattr(daily_data, f"route_{level_name}")
         image = getattr(daily_data, f"image_{level_name}")
         level_data[str(i)] = {
-            'route_name': route.route_name,
+            'route_name': route.route_name.upper(),
             'route_link': route.route_link,
             'route_grade': route.route_grade,
             'route_type': route.route_type,
