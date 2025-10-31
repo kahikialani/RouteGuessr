@@ -1,9 +1,11 @@
 Cesium.Ion.defaultAccessToken = CESIUM_KEY
 
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
 
 const viewer = new Cesium.Viewer('cesiumContainer', {
-    useBrowserRecommendedResolution: false,
-    terrain: Cesium.Terrain.fromWorldTerrain(),
+    terrain: Cesium.Terrain.fromWorldTerrain({
+      requestVertexNormals: true,
+    }),
     animation: false,
     timeline: false,
     baseLayerPicker: false,
@@ -13,6 +15,8 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     sceneModePicker: false,
     fullscreenButton: false,
     allowPicking: false,
+    msaaSamples: isMobile ? 1 : 4,
+    useBrowserRecommendedResolution: isMobile ? true : false
 });
 
 viewer.camera.setView({
@@ -24,8 +28,10 @@ viewer.camera.setView({
     }
 });
 
-viewer.scene.screenSpaceCameraController._zoomFactor = 6.0;
+viewer.scene.screenSpaceCameraController._zoomFactor = 4.0;
 viewer.cesiumWidget.creditContainer.style.display = 'none';
+viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#1a1a1a');
+viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#0f0f0f');
 
 viewer.screenSpaceEventHandler.setInputAction(function(click) {
     const cartesian = viewer.scene.pickPosition(click.position);
@@ -80,716 +86,103 @@ const line = viewer.entities.add({
 });
 
 // Area Pins
-const joshuaTree = viewer.entities.add({
-    name: "Joshua Tree NP",
-    position: Cesium.Cartesian3.fromDegrees(-116.16795, 34.0122),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-    label: {
-        text: "Joshua Tree NP",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
+// Area Pins - Climbing locations data
+const climbingAreas = [
+    { name: "Joshua Tree NP", coords: [-116.16795, 34.0122, 1000], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Tahquitz & Suicide", coords: [-116.679, 33.7607, 2351], font: "14pt monospace", minDistance: 20000.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Tahquitz Rock", coords: [-116.68322, 33.76025, 2400], font: "14pt monospace", minDistance: 0, maxDistanceText: 20000.0, maxDistance: 20000.0 },
+    { name: "Suicide Rock", coords: [-116.69415, 33.77004, 2100], font: "14pt monospace", minDistance: 0, maxDistanceText: 20000.0, maxDistance: 20000.0 },
+    { name: "Yosemite Valley", coords: [-119.63452, 37.72349, 1200], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Squamish", coords: [-123.15393, 49.67997, 20], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Indian Creek", coords: [-109.53987, 38.02574, 1757], font: "16pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Red Rocks", coords: [-115.42451, 36.13128, 1127], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Smith Rock", coords: [-121.13906, 44.36779, 992], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Tuolumne Meadows", coords: [-119.35782, 37.87401, 2600], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 2000000.0 },
+    { name: "Vedauwoo", coords: [-105.37821, 41.18479, 2030], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Ten Sleep Canyon", coords: [-107.24497, 44.13869, 1350], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Devils Tower", coords: [-104.71507, 44.59048, 1584], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Red River Gorge", coords: [-83.68217, 37.67745, 250], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "New River Gorge", coords: [-81.06337, 38.07788, 300], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Rumney", coords: [-71.8367, 43.8021, 300], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Shawangunks", coords: [-74.20173, 41.65146, 300], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "The Needles", coords: [-118.50838, 36.11985, 1100], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Bishop", coords: [-118.39539, 37.36119, 1210], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Lover's Leap", coords: [-120.14053, 38.79949, 1200], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Index", coords: [-121.56191, 47.82481, 150], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Eldorado Canyon", coords: [-105.28121, 39.9318, 1600], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Wasatch Range", coords: [-111.72869, 40.60538, 2000], font: "14pt monospace", minDistance: 20000.0, maxDistanceText: 200000.0, maxDistance: 8000000.0 },
+    { name: "Little Cottonwood Canyon", coords: [-111.77699, 40.5727, 1950], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 20000.0, maxDistance: 20000.0 },
+    { name: "Big Cottonwood Canyon", coords: [-111.789, 40.6193, 1900], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 20000.0, maxDistance: 20000.0 },
+    { name: "City of Rocks", coords: [-113.72398, 42.0778, 1800], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Rifle", coords: [-107.6912, 39.7159, 1600], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 },
+    { name: "Saint George", coords: [-113.59297, 37.05079, 960], font: "14pt monospace", minDistance: 0.0, maxDistanceText: 2000000.0, maxDistance: 8000000.0 }
+];
 
+climbingAreas.forEach(area => {
+    viewer.entities.add({
+        name: area.name,
+        position: Cesium.Cartesian3.fromDegrees(...area.coords),
+        point: {
+            pixelSize: 5,
+            color: Cesium.Color.BLACK,
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 2,
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(area.minDistance, area.maxDistance),
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+        },
+        label: {
+            text: area.name,
+            font: area.font,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            outlineColor: Cesium.Color.GRAY,
+            fillColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+            pixelOffset: new Cesium.Cartesian2(0, -10),
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(area.minDistance, area.maxDistanceText)
+        }
+    })
 });
 
-const tahquitzAndSucide = viewer.entities.add({
-    name: "tahquitzAndSuicide",
-    position: Cesium.Cartesian3.fromDegrees(-116.679, 33.7607),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(100000, 20000000.0),
-    },
-    label: {
-        text: "Tahquitz & Sucide",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(100000, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
+const menuToggle = document.getElementById('menuToggle');
+const menuOptions = document.getElementById('menuOptions');
+const mapControlsMenu = document.getElementById('mapControlsMenu');
+let isMenuOpen = false;
 
+menuToggle.addEventListener('click', function(e) {
+    e.stopPropagation();
+    isMenuOpen = !isMenuOpen;
+    mapControlsMenu.classList.toggle('expanded', isMenuOpen);
+
+    // Rotate caret icon
+    const svg = menuToggle.querySelector('svg');
+    if (isMenuOpen) {
+        svg.style.transform = 'rotate(180deg)';
+    } else {
+        svg.style.transform = 'rotate(0deg)';
+    }
 });
 
-const tahquitz = viewer.entities.add({
-    name: "tahquitz",
-    position: Cesium.Cartesian3.fromDegrees(-116.68322, 33.76025),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 100000),
-    },
-    label: {
-        text: "Tahquitz Rock",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 100000),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
+// Close menu when clicking outside
+document.addEventListener('click', function(e) {
+    if (isMenuOpen && !mapControlsMenu.contains(e.target)) {
+        isMenuOpen = false;
+        mapControlsMenu.classList.remove('expanded');
+        const svg = menuToggle.querySelector('svg');
+        svg.style.transform = 'rotate(0deg)';
+    }
 });
 
-const suicideRock = viewer.entities.add({
-    name: "sucideRock",
-    position: Cesium.Cartesian3.fromDegrees(-116.69407, 33.77004),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 100000),
-    },
-    label: {
-        text: "Suicide Rock",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 100000),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const yosemiteValley = viewer.entities.add({
-    name: "Yosemite Valley",
-    position: Cesium.Cartesian3.fromDegrees(-119.63452, 37.72349),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Yosemite Valley",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const squamish = viewer.entities.add({
-    name: "Squamish",
-    position: Cesium.Cartesian3.fromDegrees(-123.15393, 49.67997),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Squamish",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const indianCreek = viewer.entities.add({
-    name: "Indian Creek",
-    position: Cesium.Cartesian3.fromDegrees(-109.53987, 38.02574),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Indian Creek",
-        font: "16pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const redRocks = viewer.entities.add({
-    name: "Red Rocks",
-    position: Cesium.Cartesian3.fromDegrees(-115.42451, 36.13128),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Red Rocks",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const smithRock = viewer.entities.add({
-    name: "Smith Rock",
-    position: Cesium.Cartesian3.fromDegrees(-121.13906, 44.36779),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Smith Rock",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const tuoloumne = viewer.entities.add({
-    name: "Tuolumne Meadows",
-    position: Cesium.Cartesian3.fromDegrees(-119.35782, 37.87401),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0)
-    },
-    label: {
-        text: "Tuolumne Meadows",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const vedawoo = viewer.entities.add({
-    name: "Vedauwoo",
-    position: Cesium.Cartesian3.fromDegrees(-105.37821 , 41.18479),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Vedauwoo",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-});
-
-const tensleep = viewer.entities.add({
-    name: "Ten Sleep Canyon",
-    position: Cesium.Cartesian3.fromDegrees(-107.24497 , 44.13869),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Ten Sleep Canyon",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const devilsTower = viewer.entities.add({
-    name: "Devils Tower",
-    position: Cesium.Cartesian3.fromDegrees(-104.71507, 44.59048),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Devils Tower",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const redRiverGorge = viewer.entities.add({
-    name: "Red River Gorge",
-    position: Cesium.Cartesian3.fromDegrees(-83.68217, 37.67745),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Red River Gorge",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const newRiverGorge = viewer.entities.add({
-    name: "New River Gorge",
-    position: Cesium.Cartesian3.fromDegrees(-81.06337 , 38.07788),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "New River Gorge",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const rumney = viewer.entities.add({
-    name: "Rumney",
-    position: Cesium.Cartesian3.fromDegrees(-71.8367, 43.8021),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Rumney",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const theGunks = viewer.entities.add({
-    name: "Shawangunks",
-    position: Cesium.Cartesian3.fromDegrees(-74.20173, 41.65146),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Shawangunks",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const theNeedles = viewer.entities.add({
-    name: "The Needles",
-    position: Cesium.Cartesian3.fromDegrees(-118.50838, 36.11985),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "The Needles",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const bishopArea = viewer.entities.add({
-    name: "Bishop",
-    position: Cesium.Cartesian3.fromDegrees(-118.39539, 37.36119),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Bishop",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const loversLeap = viewer.entities.add({
-    name: "Lover's Leap",
-    position: Cesium.Cartesian3.fromDegrees(-120.14053, 38.79949),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Lover's Leap",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const indexWA = viewer.entities.add({
-    name: "Index",
-    position: Cesium.Cartesian3.fromDegrees(-121.56191, 47.82481),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Index",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const eldorado = viewer.entities.add({
-    name: "Eldorado Canyon",
-    position: Cesium.Cartesian3.fromDegrees(-105.28121, 39.9318),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Eldorado Canyon",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const wasatch = viewer.entities.add({
-    name: "Wasatch Range",
-    position: Cesium.Cartesian3.fromDegrees(-111.72869 , 40.60538),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(50000, 2000000.0),
-    },
-    label: {
-        text: "Wasatch Range",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(50000, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const littleCW = viewer.entities.add({
-    name: "Little Cottonwood",
-    position: Cesium.Cartesian3.fromDegrees(-111.77699, 40.5727),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 50000.0)
-    },
-    label: {
-        text: "Little Cottonwood Canyon",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 50000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const bigCW = viewer.entities.add({
-    name: "Big Cottonwood",
-    position: Cesium.Cartesian3.fromDegrees(-111.789, 40.6193),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 50000.0)
-    },
-    label: {
-        text: "Big Cottonwood Canyon",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 50000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const cityOfRocks = viewer.entities.add({
-    name: "City of Rocks",
-    position: Cesium.Cartesian3.fromDegrees(-113.72398 , 39.9318),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "City of Rocks",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-
-});
-
-const rifle = viewer.entities.add({
-    name: "Rifle",
-    position: Cesium.Cartesian3.fromDegrees(-107.6912, 39.7159),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Rifle",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-});
-const stGeorge = viewer.entities.add({
-    name: "Saint George",
-    position: Cesium.Cartesian3.fromDegrees(-113.59297, 37.05079),
-    point: {
-        pixelSize: 5,
-        color: Cesium.Color.BLACK,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-    },
-    label: {
-        text: "Saint George",
-        font: "14pt monospace",
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineColor: Cesium.Color.GRAY,
-        fillColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -10),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, 2000000.0),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-    },
-});
-
-// Reset to North button
+// Reset to North button functionality
 document.getElementById('resetNorthButton').addEventListener('click', function() {
+    // Get current camera position
     const currentPosition = viewer.camera.positionCartographic;
     const currentHeight = currentPosition.height;
     const currentLongitude = Cesium.Math.toDegrees(currentPosition.longitude);
     const currentLatitude = Cesium.Math.toDegrees(currentPosition.latitude);
 
+    // Smoothly fly to same position but facing north (heading = 0)
     viewer.camera.flyTo({
         destination: Cesium.Cartesian3.fromDegrees(currentLongitude, currentLatitude, currentHeight),
         orientation: {
@@ -797,7 +190,33 @@ document.getElementById('resetNorthButton').addEventListener('click', function()
             pitch: Cesium.Math.toRadians(-90),
             roll: 0.0
         },
-        duration: 1.0
+        duration: 1.0 // 1 second animation
     });
+});
+
+// Map type toggle functionality
+let isRoadMap = false;
+const toggleMapTypeButton = document.getElementById('toggleMapTypeButton');
+const mapTypeLabel = document.getElementById('mapTypeLabel');
+
+toggleMapTypeButton.addEventListener('click', async function() {
+    isRoadMap = !isRoadMap;
+
+    if (isRoadMap) {
+        // Switch to road map (OpenStreetMap)
+        viewer.imageryLayers.removeAll();
+        viewer.imageryLayers.addImageryProvider(
+            new Cesium.OpenStreetMapImageryProvider({
+                url: 'https://tile.openstreetmap.org/'
+            })
+        );
+        mapTypeLabel.textContent = 'Road Map';
+    } else {
+        // Switch back to satellite imagery
+        viewer.imageryLayers.removeAll();
+        const imageryProvider = await Cesium.createWorldImageryAsync();
+        viewer.imageryLayers.addImageryProvider(imageryProvider);
+        mapTypeLabel.textContent = 'Satellite';
+    }
 });
 
