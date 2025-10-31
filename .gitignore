@@ -4,3 +4,11 @@ __pycache__/
 .env
 scraping/RouteGuessrDB.db
 scraping/testing.py
+testing.py
+deprecated/
+node_modules/
+launch.json
+package-lock.json
+package.json
+route-finder.csv
+settings.local.json
