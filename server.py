@@ -154,6 +154,7 @@ class Calculations:
             'route_lat': None,
             'route_lon': None
         }
+
     def distance_finder(self, user_coords, route_coords):
         from geopy.distance import geodesic
         user_coords_list = [user_coords['user_lat'],user_coords['user_lon']]
@@ -162,10 +163,23 @@ class Calculations:
         logging.debug(f"user_coords: {user_coords_list}, route_coords: {route_coords_list}")
         return distance.km
 
+    def find_cesium_zoom(self, distance, fov = 30, padding = 2):
+        from math import radians, sin, tan
+        earth_radius = 6371
+        fov_rad = radians(fov)
+
+        half_distance = distance / 2
+        central_angle = half_distance / earth_radius
+        chord = 2 * earth_radius * sin(central_angle / 2)
+        height_km = (chord / (2 * tan(fov_rad / 2))) * padding
+
+        return height_km * 1000
+
     def find_score_daily(self, distance):
         from math import e
-        score = 5000 * (e **  (-10 * distance / 300))
-        if score >= 4995:
+        scale = 300
+        score = 5000 * (e **  (-10 * distance / scale))
+        if score >= 4992:
             score = 5000
         return score
 
@@ -447,31 +461,6 @@ def level_results(level):
     avg_lat = (lat_guess + route_lat) / 2
     avg_lon = (lon_guess + route_lon) / 2
 
-    if distance < 0.8:
-        zoom_level = 16
-    elif distance < 1.0:
-        zoom_level = 16
-    elif distance < 3:
-        zoom_level = 14
-    elif distance < 5:
-        zoom_level = 13
-    elif distance < 10:
-        zoom_level = 12
-    elif distance < 20:
-        zoom_level = 11
-    elif distance < 40:
-        zoom_level = 10
-    elif distance < 80:
-        zoom_level = 9
-    elif distance < 150:
-        zoom_level = 8
-    elif distance < 300:
-        zoom_level = 6
-    elif distance < 450:
-        zoom_level = 5
-    else:
-        zoom_level = 4
-
     # Area name finder
     area_name = ClimbingArea.query.filter_by(id=route.area_id).first().area_name
 
@@ -498,6 +487,10 @@ def level_results(level):
     else:
         stars = "★★★★"
 
+    zoom = Calculations().find_cesium_zoom(distance)
+    if zoom <= 3500:
+        zoom = 3500
+
     return render_template("daily_result.html",
                            level=level,
                            cesium_key = cesium_key,
@@ -520,7 +513,7 @@ def level_results(level):
                            distance_str=distance_str,
                            avg_lon=avg_lon,
                            avg_lat=avg_lat,
-                           zoom_level=zoom_level,
+                           zoom=zoom,
                            area_name=area_name)
 
 @app.route('/daily/results')
@@ -680,34 +673,9 @@ def free_play_results(level):
     avg_lat = (user_lat + route_lat) / 2
     avg_lon = (user_lon + route_lon) / 2
 
-    if distance < 0.8:
-        zoom_level = 16
-    elif distance < 1.0:
-        zoom_level = 16
-    elif distance < 3:
-        zoom_level = 14
-    elif distance < 5:
-        zoom_level = 13
-    elif distance < 10:
-        zoom_level = 12
-    elif distance < 20:
-        zoom_level = 11
-    elif distance < 40:
-        zoom_level = 10
-    elif distance < 80:
-        zoom_level = 9
-    elif distance < 150:
-        zoom_level = 8
-    elif distance < 300:
-        zoom_level = 6
-    elif distance < 450:
-        zoom_level = 5
-    else:
-        zoom_level = 4
-
     score = session['level_scores'][int(level) - 1]
-    total_score = session['total_score'] + score
-    session['total_score'] = total_score
+    # Don't recalculate total_score here - it was already updated in the API endpoint
+    total_score = session['total_score']
 
     if route_info.route_type == "TR":
         route_type_str = "Top Rope"
@@ -732,6 +700,10 @@ def free_play_results(level):
     else:
         stars = "★★★★"
 
+    zoom = Calculations().find_cesium_zoom(distance)
+    if zoom <= 3500:
+        zoom = 3500
+    logging.debug(f"Zoom height (in meters): {zoom}")
     return render_template("free_result.html",
                            level=level,
                            cesium_key=cesium_key,
@@ -754,7 +726,7 @@ def free_play_results(level):
                            distance_str = distance_str,
                            avg_lon = avg_lon,
                            avg_lat = avg_lat,
-                           zoom_level = zoom_level,
+                           zoom = zoom,
                            area_name = area_info.area_name)
 
 @app.route("/legendary-lines/play")
@@ -769,6 +741,17 @@ def submit_free_play():
     level = json['level']
     guess_lat = json.get('guess_lat')
     guess_lon = json.get('guess_lon')
+
+    # Check if this level has already been completed
+    if len(session['level_scores']) >= int(level):
+        # Level already completed, return existing score
+        return jsonify({
+            'success': True,
+            'score': session['level_scores'][int(level) - 1],
+            'distance': session['distances'][int(level) - 1],
+            'total_score': session['total_score']
+        })
+
     session['guesses_lat'].append(guess_lat)
     session['guesses_lon'].append(guess_lon)
     logging.debug(f"guess_lat: {guess_lat}, guess_lon: {guess_lon}, level: {level}")
@@ -800,11 +783,14 @@ def submit_free_play():
     distances.append(distance)
     session['distances'] = distances
 
+    # Update total score when guess is submitted, not on results page
+    session['total_score'] = sum(session['level_scores'])
+
     return jsonify({
         'success': True,
         'score': int(score),
         'distance': distance,
-        'total_score': sum(session['level_scores'])
+        'total_score': session['total_score']
     })
 
 
