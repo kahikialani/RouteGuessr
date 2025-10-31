@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROUTEGUESSR - DAILY LEVEL RESULTS</title>
+    <title>ROUTEGUESSR - CLASSIC</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/classic_result.css') }}">
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.134/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.134/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
@@ -26,7 +26,7 @@
 
     <div class="badge">
         <div class="label">Round &nbsp; Score</div>
-        <div class="values">{{ level }} /5 &nbsp; &nbsp; {{ current_total }}</div>
+        <div class="values">{{ level }}/5 &nbsp; &nbsp; {{ current_total }}</div>
     </div>
     <div class="middle-box">
         <div class="content">
@@ -43,6 +43,25 @@
                     </div>
                 </div>
                 <div id="cesiumContainer">
+                    <div class="map-controls-menu" id="mapControlsMenu">
+                        <button class="menu-toggle" id="menuToggle" title="Map options">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <div class="menu-options" id="menuOptions">
+                            <button class="menu-option" id="resetNorthButton" title="Reset camera to face north">
+                                <img src="{{ url_for('static', filename='images/nav-reset.svg') }}" alt="">
+                                <span>Reset North</span>
+                            </button>
+                            <button class="menu-option" id="toggleMapTypeButton" title="Switch map type">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6h4v12H3V6zm7-3h4v18h-4V3zm7 6h4v12h-4V9z" fill="currentColor"/>
+                                </svg>
+                                <span id="mapTypeLabel">Satellite</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -71,15 +90,13 @@
                 {% endif %}
         </div>
     </footer>
-
-    </footer>
     <script>
         const CESIUM_KEY = '{{ cesium_key }}';
         const USER_LON = {{ user_lon }};
         const USER_LAT =  {{ user_lat }};
         const ACTUAL_LON = {{ route_lon }};
         const ACTUAL_LAT = {{ route_lat }};
-        const ZOOM = 4000;
+        const ZOOM = {{ zoom }};
         const CENTER_LON = {{ avg_lon }};
         const CENTER_LAT = {{ avg_lat }};
         const PIN_ICON = "{{ url_for('static', filename='/images/user_pin.svg') }}";
@@ -113,14 +130,46 @@
         function adjustMobileSpacing() {
             if (window.innerWidth <= 1024) {
                 const middleBox = document.querySelector('.middle-box');
-                const boxBottom = middleBox.offsetTop + middleBox.offsetHeight;
-                document.body.style.minHeight = (boxBottom + 60) + 'px'; // 60px spacing
+                if (middleBox) {
+                    const boxBottom = middleBox.offsetTop + middleBox.offsetHeight;
+                    document.body.style.minHeight = (boxBottom + 60) + 'px'; // 60px spacing
+                }
             }
         }
 
         window.addEventListener('load', adjustMobileSpacing);
-        document.querySelector('.main-image').addEventListener('load', adjustMobileSpacing);
+        const mainImage = document.querySelector('.main-image');
+        if (mainImage) {
+            mainImage.addEventListener('load', adjustMobileSpacing);
+        }
         window.addEventListener('resize', adjustMobileSpacing);
+
+                const fullscreenMapButton = document.getElementById('fullscreenMapButton');
+        let isFullscreen = false;
+        const gradientTitle = document.querySelector('.gradient-title');
+
+
+        fullscreenMapButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            isFullscreen = !isFullscreen;
+
+            if (isFullscreen) {
+                mapWindow.classList.add('fullscreen');
+                mapWindow.style.pointerEvents = 'auto';
+                if (gradientTitle) {
+                    gradientTitle.style.opacity = '0';
+                    gradientTitle.style.pointerEvents = 'none';
+                }
+            } else {
+                mapWindow.classList.remove('fullscreen');
+                mapWindow.style.pointerEvents = '';
+                if (gradientTitle) {
+                    gradientTitle.style.opacity = '';
+                    gradientTitle.style.pointerEvents = '';
+                }
+
+            }
+        });
     </script>
     <script>
         function nextLevel() {
