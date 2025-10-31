@@ -37,8 +37,16 @@
                 <div class="route-info-card">
                     <a target="_blank" rel="noopener noreferrer" href="{{ route_link }}">{{ route_name }}</a>
                     <div class="route-details">
-                        <p class="info-text italic"> {{ area_name }}</p>
-                        <p class="info-text"><span>{{ route_grade }}</span> • {{ route_type }} • {{ route_length }} ft • <span>{{ stars }} {{ route_stars }}</span></p>
+                        <div class="route-location gabarito-regular">
+                            {{ area_name }}
+                        </div>
+
+                        <div class="route-stats gabarito-regular">
+                            <span class="stat grade">{{ route_grade }}</span>
+                            <span class="stat">{{ route_type }}</span>
+                            <span class="stat">{{ route_length }}ft</span>
+                            <span class="stat stars"> {{ stars }} {{ route_stars }}</span>
+                        </div>
                         <p class="mobile-distance">Your guess was {{ distance_str }} away!!</p>
                     </div>
                 </div>
