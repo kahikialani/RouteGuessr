@@ -194,11 +194,11 @@ class Calculations:
         """Return CSS class based on score (assuming max is 5000)"""
         if score >= 4500:
             return 'score-excellent'
-        elif score >= 3500:
+        elif score >= 3000:
             return 'score-good'
-        elif score >= 2500:
+        elif score >= 2000:
             return 'score-average'
-        elif score >= 1500:
+        elif score >= 1000:
             return 'score-poor'
         else:
             return 'score-bad'
@@ -206,13 +206,13 @@ class Calculations:
     def get_total_class(self, total):
         if total == 25000:
             return 'total-perfect'
-        elif total >= 24000:
+        elif total >= 23000:
             return 'total-excellent'
-        elif total >= 21000:
+        elif total >= 20000:
             return 'total-good'
-        elif total >= 19000:
+        elif total >= 13000:
             return 'total-average'
-        elif total >= 14000:
+        elif total >= 8000:
             return 'total-poor'
         else:
             return 'total-bad'
@@ -609,6 +609,7 @@ def free_play():
     session['distances'] = []
     session['level'] = next_level
     session['total_score'] = 0
+    session['result_info'] = []
 
     return redirect(url_for("free_play_level", level=next_level))
 
@@ -674,7 +675,6 @@ def free_play_results(level):
     avg_lon = (user_lon + route_lon) / 2
 
     score = session['level_scores'][int(level) - 1]
-    # Don't recalculate total_score here - it was already updated in the API endpoint
     total_score = session['total_score']
 
     if route_info.route_type == "TR":
@@ -704,6 +704,29 @@ def free_play_results(level):
     if zoom <= 3500:
         zoom = 3500
     logging.debug(f"Zoom height (in meters): {zoom}")
+
+    result_info = session['result_info']
+    result_info.append({
+        'route_name': route_info.route_name,
+        'route_grade': route_info.route_grade,
+        'route_length': route_info.route_length,
+        'route_type': route_info.route_type,
+        'route_stars': route_info.route_stars,
+        'route_link': route_info.route_link,
+        'area_name': area_info.area_name,
+        'stars_str': stars,
+        'type_str': route_type_str,
+        'img_url': image_info.image_link
+    })
+    session['result_info'] = result_info
+
+    logging.debug(f"Session info: {session['result_info']}")
+    logging.debug(f"Data: {session['data']}")
+    logging.debug(f"Total Score: {session['total_score']}")
+    logging.debug(f"Distances: {session['distances']}")
+    logging.debug(f"Scores: {session['level_scores']}")
+    logging.debug(f"Test: {session['result_info'][int(level) - 1]}")
+
     return render_template("free_result.html",
                            level=level,
                            cesium_key=cesium_key,
@@ -728,6 +751,46 @@ def free_play_results(level):
                            avg_lat = avg_lat,
                            zoom = zoom,
                            area_name = area_info.area_name)
+
+@app.route('/free-play/results')
+@login_required
+def free_play_end():
+    if not session:
+        return redirect(url_for("free_play"))
+
+    if len(session['level_scores']) != 5:
+        # TODO
+        return redirect(url_for("free_play"))
+
+
+    calc = Calculations()
+    level_data = {}
+    for i in range(1, 6):
+        logging.debug(f"TESTING: {session['result_info'][i-1]}")
+        level_data[str(i)] = {
+            'route_name': session['result_info'][i-1]['route_name'],
+            'route_link': session['result_info'][i-1]['route_link'],
+            'route_grade': session['result_info'][i-1]['route_grade'],
+            'route_type': session['result_info'][i-1]['route_type'],
+            'route_stars': session['result_info'][i-1]['route_stars'],
+            'route_length': int(session['result_info'][i-1]['route_length']),
+            'area_name': session['result_info'][i-1]['area_name'],
+            'image_link': session['result_info'][i-1]['img_url'],
+            'score': session['level_scores'][i-1],
+            'score_class': calc.get_score_class(session['level_scores'][i - 1]),
+            'stars_str': session['result_info'][i-1]['stars_str'],
+            'type_str': session['result_info'][i-1]['type_str'],
+            'distance': session['distances'][i-1]
+        }
+    total_score = session['total_score']
+    total_score_class = calc.get_total_class(total_score)
+    return render_template("free_end.html",
+                           user=current_user,
+                           total_score=session['total_score'],
+                           total_score_class=total_score_class,
+                           level_data=level_data)
+
+
 
 @app.route("/legendary-lines/play")
 def legendary_lines_play():
@@ -936,4 +999,4 @@ if __name__ == '__main__':
         with app.app_context():
             db.create_all()
             print("Database initialized")
-    app.run(host='0.0.0.0', port=8002, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)
