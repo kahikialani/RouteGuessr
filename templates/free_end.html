@@ -1,80 +1,95 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROUTEGUESSR - CLASSIC </title>
+    <link href="{{ url_for('static', filename='styles/classic_end.css')}}" rel="stylesheet"/>
+</head>
+<body>
+<div class="gradient-layer"></div>
+<div class="particle-container" id="particleContainer"></div>
+<div class="background-layer"></div>
 
-{% block title %}ROUTEGUESSR{% endblock %}
+<a class="home-link anton-regular" href="/">ROUTEGUESSR</a>
 
-{% block styles %}
-    <title>ROUTEGUESSR - Challenge Complete!</title>
-    <link href="{{ url_for('static', filename='styles/free_play_final_results.css')}}" rel="stylesheet"/>
-{% endblock %}
+<div class="results-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="main-title anton-regular">CLASSIC MODE - </h1>
+        <p class="date gabarito-regular">DATE PLACEHOLDER</p>
 
-{% block content %}
-<div class="logo-container">
-    <a href="/" class="logo-link">
-        <img src="{{ url_for('static', filename='images/ROUTEGUESSR.png') }}" alt="RouteGuessr Logo" class="logo">
-    </a>
-</div>
-
-<section class="results-page">
-    <div class="header-section">
-        <h1 class="title">DAILY CHALLENGE COMPLETE!</h1>
-        <p class="date">{{ date.strftime('%B %d, %Y') }}</p>
-        <button class="{{ total_score_class }}">
-            <span class="text">TOTAL SCORE: {{ total_score }}</span>
-        </button>
-
+        <div class="total-score-card">
+            <div class="score-label gabarito-regular">TOTAL SCORE</div>
+            <div class="score-value anton-regular {{ total_score_class }}">{{ total_score }}</div>
+            <div class="score-max gabarito-regular">/ 25000</div>
+        </div>
     </div>
-    <div class="levels-container">
+
+    <!-- Results Grid -->
+    <div class="results-grid">
         {% for level_num in range(1, 6) %}
             {% set level = level_data[level_num|string] %}
-            <div class="level-card">
-                <div class="level-header">
-                    <h3>Level {{ level_num }}</h3>
-                    <div class="level-score {{ level.score_class }}">{{ level.score }} points</div>
-                </div>
-
-                <div class="level-content">
-                    <!-- Image Section -->
-                    <div class="image-section">
-                        <img src="{{ level.image_link }}" alt="{{ level.route_name }}">
-                    </div>
-
-                    <!-- Route Info Section -->
-                    <div class="info-section">
-                        <div class="route-name">
-                            <a href="{{ level.route_link }}" target="_blank">{{ level.route_name }}</a>
-                        </div>
-                        <div class="route-details">
-                            <span class="grade">{{ level.route_grade }}</span>
-                            <span class="type">{{ level.route_type }}</span>
-                            <span class="stars">⭐ {{ level.route_stars }}</span>
-                            <span class="length">{{ level.route_length }}ft</span>
-                        </div>
-                        <div class="area-name">{{ level.area_name }}</div>
-
-                        <!-- Distance -->
-                        <div class="distance-info {{ level.score_class }}">
-                            <strong>Your guess:</strong>
+            <div class="result-card">
+                <div class="card-header">
+                    <div class="level-badge anton-regular">LEVEL {{ level_num }}</div>
+                    <div class="header-right">
+                        <div class="distance-badge {{ level.score_class }} gabarito-regular">
                             {% if level.distance >= 1 %}
                                 {{ "%.2f"|format(level.distance) }} km away
                             {% else %}
                                 {{ "%.0f"|format(level.distance * 1000) }} m away
                             {% endif %}
                         </div>
-
-                        <!-- Coordinates -->
-                        <div class="coordinates">
-                            <div><strong>Actual:</strong> {{ "%.4f"|format(level.route_lat) }}, {{ "%.4f"|format(level.route_lon) }}</div>
-                            <div><strong>Your guess:</strong> {{ "%.4f"|format(level.guess_lat) }}, {{ "%.4f"|format(level.guess_lon) }}</div>
+                        <div class="score-badge {{ level.score_class }} anton-regular">
+                            {{ level.score }}
                         </div>
                     </div>
                 </div>
+
+                <div class="card-body">
+                    <div class="route-image">
+                        <img src="{{ level.image_link }}" alt="{{ level.route_name }}">
+                    </div>
+
+                    <div class="route-info">
+                        <a href="{{ level.route_link }}" target="_blank" class="route-title anton-regular">
+                            {{ level.route_name }}
+                        </a>
+
+                        <div class="route-location gabarito-regular">
+                            {{ level.area_name }}
+                        </div>
+
+                        <div class="route-stats gabarito-regular">
+                            <span class="stat grade">{{ level.route_grade }}</span>
+                            <span class="stat">{{ level.type_str }}</span>
+                            <span class="stat">{{ level.route_length }}ft</span>
+                            <span class="stat stars">{{ level.stars_str }} {{ route_stars }}</span>
+                        </div>
+
+                        <!-- Space reserved for future route description -->
+                        <div class="route-description-placeholder"></div>
+                    </div>
+                </div>
             </div>
-            {% endfor %}
+        {% endfor %}
     </div>
 
-        <div class="actions">
-            <a href="{{ url_for('daily_leaderboard') }}" class="btn btn-primary">View Leaderboard</a>
-            <a href="{{ url_for('home') }}" class="btn btn-secondary">Back to Home</a>
-        </div>
-    </section>
-{% endblock %}
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="{{ url_for('home') }}" class="btn btn-secondary anton-regular">
+            BACK TO HOME
+        </a>
+        <a href="{{ url_for('daily_leaderboard') }}" class="btn btn-primary anton-regular">
+            PLAY AGAIN
+        </a>
+        <a href="{{ url_for('home') }}" class="btn btn-secondary anton-regular">
+            SELECT AREA
+        </a>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='/scripts/classic_mode.js') }}"></script>
+</body>
+</html>
