@@ -1,0 +1,288 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Gabarito:wght@400..900&display=swap');
+
+/* ========================================
+   CSS VARIABLES
+   ======================================== */
+:root {
+    /* Colors */
+    --clr-base: hsl(0 0 0);
+    --clr-cards: hsl(0 0 5%);
+    --clr-important: hsl(0 0 10%);
+    --clr-box-background: hsl(0 0 0 / .7);
+    --clr-text-white: hsl(0 0 95%);
+    --clr-text-light: hsl(0 0 70%);
+    --clr-text-gray: hsl(0 0 50%);
+    --clr-primary: hsl(16 100 60);
+    --clr-accent: hsl(32 93 54);
+    --clr-accent-bright: hsl(32 93 70);
+    --clr-primary-opacity: rgba(255, 107, 53, 0.8);
+    --clr-cool: #e77148;
+    --clr-footer: oklch(14.838% 0.03606 286.852);
+
+    /* Effects */
+    --brdr: 1px solid rgba(255, 255, 255, 0.1);
+    --box-shadow: 0 5px 10px rgba(0, 0, 0, 0.8);
+
+    /* Spacing */
+    --viewport-margin-v: 2.5vh;
+    --viewport-margin-h: 2.5vw;
+    --container-padding: 20px;
+}
+
+/* ========================================
+   RESETS & BASE STYLES
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    position: relative;
+    background: #0f0f0f;
+}
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+.anton-regular {
+    font-family: "Anton", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.bebas-neue-regular {
+    font-family: "Bebas Neue", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.gabarito-regular {
+    font-family: "Gabarito", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* ========================================
+   BACKGROUND LAYERS
+   ======================================== */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg,
+        #1a0d08 0%,
+        #331a0d 25%,
+        #2d1610 50%,
+        #1f1412 75%,
+        #0f0f0f 100%
+    );
+    z-index: -2;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(ellipse at 20% 30%, rgba(247, 147, 30, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 60%, rgba(255, 107, 53, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(230, 85, 39, 0.05) 0%, transparent 50%);
+    animation: gradientShift1 25s ease-in-out infinite;
+    z-index: -1;
+}
+
+.gradient-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(ellipse at 70% 20%, rgba(255, 140, 66, 0.07) 0%, transparent 45%),
+        radial-gradient(ellipse at 30% 70%, rgba(247, 147, 30, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 90%, rgba(255, 107, 53, 0.04) 0%, transparent 40%);
+    animation: gradientShift2 30s ease-in-out infinite reverse;
+    z-index: -1;
+}
+
+.background-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 120%;
+    height: 120%;
+    background: url("../images/YosemitePNG.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    opacity: 5%;
+    filter: blur(3px);
+    z-index: -1;
+    animation: backgroundDrift 120s ease-in-out infinite;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+@keyframes gradientShift1 {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(1) rotate(0deg);
+    }
+    33% {
+        opacity: 0.8;
+        transform: scale(1.05) rotate(2deg);
+    }
+    66% {
+        opacity: 0.5;
+        transform: scale(0.98) rotate(-2deg);
+    }
+}
+
+@keyframes gradientShift2 {
+    0%, 100% {
+        opacity: 0.5;
+        transform: scale(1) translate(0, 0);
+    }
+    40% {
+        opacity: 0.7;
+        transform: scale(1.03) translate(20px, -10px);
+    }
+    70% {
+        opacity: 0.4;
+        transform: scale(0.97) translate(-15px, 15px);
+    }
+}
+
+@keyframes backgroundDrift {
+    0% {
+        transform: translate(0, 0) scale(1.15) rotate(0deg);
+    }
+    12% {
+        transform: translate(-30px, 20px) scale(1.16) rotate(0.5deg);
+    }
+    25% {
+        transform: translate(-50px, -10px) scale(1.14) rotate(-0.3deg);
+    }
+    37% {
+        transform: translate(-35px, -40px) scale(1.17) rotate(0.4deg);
+    }
+    50% {
+        transform: translate(0, -50px) scale(1.15) rotate(0deg);
+    }
+    62% {
+        transform: translate(35px, -30px) scale(1.16) rotate(-0.5deg);
+    }
+    75% {
+        transform: translate(55px, 10px) scale(1.14) rotate(0.3deg);
+    }
+    87% {
+        transform: translate(30px, 40px) scale(1.17) rotate(-0.2deg);
+    }
+    100% {
+        transform: translate(0, 0) scale(1.15) rotate(0deg);
+    }
+}
+
+@keyframes particleFly {
+    0% {
+        transform: translate(0, 0);
+        opacity: 0;
+    }
+    5% {
+        opacity: 0.8;
+    }
+    95% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(var(--x-distance), var(--y-distance));
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   PARTICLES
+   ======================================== */
+.particle-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    width: 1px;
+    height: 4px;
+    border-radius: 50%;
+    filter: blur(1px);
+    box-shadow: 0 0 6px rgba(255, 140, 66, 0.5);
+    animation: particleFly linear infinite;
+}
+
+/* ========================================
+   HEADER / NAVIGATION
+   ======================================== */
+.gradient-title {
+    position: fixed;
+    background-image: linear-gradient(0deg, var(--clr-primary), var(--clr-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    z-index: 100;
+    top: 20px;
+    left: 20px;
+    font-size: 3rem;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.gradient-title:hover {
+    cursor: pointer;
+    transform: scale(1.05);
+}
+
+/* ========================================
+   RESPONSIVE - MOBILE
+   ======================================== */
+@media (max-width: 1023px) {
+    body::after,
+    .gradient-layer,
+    .background-layer {
+        animation: none !important;
+    }
+
+    .background-layer {
+        filter: none !important;
+        opacity: 10%;
+    }
+
+    .particle {
+        display: none;
+    }
+}
