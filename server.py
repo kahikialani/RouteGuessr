@@ -217,9 +217,9 @@ class Calculations:
         else:
             return 'total-bad'
 
-def generate_free_play():
+def generate_free_play(area_name):
     from random import choice, choices
-    all_area_ids = [row.id for row in ClimbingArea.query.all()]
+    all_area_ids = [row.id for row in ClimbingArea.query.filter_by(area_name=area_name).all()]
     area_ids = choices(all_area_ids, k = 5)
 
     route_ids = []
@@ -597,9 +597,9 @@ def daily_leaderboard():
                            date=today,
                            user=current_user)
 
-@app.route("/free-play")
-def free_play():
-    data =  generate_free_play()
+@app.route("/free-play/<area_name>")
+def free_play(area_name):
+    data =  generate_free_play(area_name)
     next_level = 1
 
     session['data'] = data
@@ -790,6 +790,9 @@ def free_play_end():
                            total_score_class=total_score_class,
                            level_data=level_data)
 
+@app.route('/classic')
+def free_play_select():
+    return render_template("free_select.html")
 
 
 @app.route("/legendary-lines/play")
@@ -999,4 +1002,4 @@ if __name__ == '__main__':
         with app.app_context():
             db.create_all()
             print("Database initialized")
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=10000, debug=True)
