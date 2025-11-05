@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ROUTEGUESSR - CLASSIC</title>
+    <link href="{{ url_for('static', filename='styles/classic_base.css')}}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='styles/classic_select.css')}}" rel="stylesheet"/>
+</head>
+<body>
+    <div class="gradient-layer"></div>
+    <div class="particle-container" id="particleContainer"></div>
+    <div class="background-layer"></div>
+    <a class="gradient-title anton-regular" href="/">ROUTEGUESSR</a>
+
+    <div class="container">
+        <h1 class="page-title bebas-neue-regular">SELECT YOUR FAVORITE CLIMBING AREA</h1>
+
+        <div class="location-grid" id="locationGrid">
+            <div class="location-card" data-area="Bishop Area">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/106133376_large_1558652904.jpg?cache=1709611688');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Bishop</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">3,415</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Granite/Volcanic</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value"></span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">World-renowned bouldering destination and gate-way to the Sierra Nevada mountain range, Bishop is one of the world's greatest year round climbing venues.  <!--From hundreds of sport climbs in the Owen's River Gorge, famous highballs of the Buttermilks, and countless alpine trad routes, Bishop is an adventure wonderland.--></p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="City of RocksRock ">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/106746925_large_1494137487.jpg?cache=1762315279');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">City of Rocks</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">699</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Granite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">1,596</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Stunning granite spires rising from the Idaho desert, offering excellent multipitch trad climbing.</p>
+                </div>
+            </div>
+
+            <!--
+            <div class="location-card" data-area="Devils Tower">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/107413137_large_1494187423.jpg?cache=1760480537');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Devils Tower</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">161</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Phonolite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">408</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Iconic volcanic tower with unique columnar cracks and incredible exposure on classic aid and trad routes.</p>
+                </div>
+            </div>
+            -->
+
+            <div class="location-card" data-area="Eldorado Canyon State ParkRock ">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/107620412_large_1494200701.jpg?cache=1701317479');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Eldorado Canyon</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">1,288</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Sandstone</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">2,368</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Historic Colorado canyon known for hard trad climbing on golden sandstone walls with runout protection.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="The Gunks">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/106303385_large_1494095927.jpg?cache=1701315539');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">The Gunks</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">1,342</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Quartz Conglomerate</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">2,662</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">East Coast's premier climbing area with horizontal breaks, roofs, and classic horizontal crack systems.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="Indian CreekRock ">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/106138242_large_1558653564.jpg?cache=1737171568');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Indian Creek</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">1,693</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Windgate Sandstone</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">1,189</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">The ultimate splitter destination, but it's more than just a training ground. The Utah desert provides some of the highest quality crack climbs in the world, and they're usually only 10 feet apart.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="Index">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/119130989_large_1593466072.jpg?cache=1741201868');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Index</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">1,138</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Granite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">2,282</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Pacific Northwest granite walls offering wet, mossy, and adventurous trad climbing in the Cascades.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="Joshua Tree National Park">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/105913131_medium_1557941287.jpg?cache=1741286531');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Joshua Tree</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">7,853</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Quartz Monzonite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">11,789</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">A true wonderland of rocks within the bizarre desert, Joshua Tree maintains it's 'sandbagged' reputation by hosting scarying, traditionally bolted sport climbs, funky trad routes, and thousands of unique boulder problems.</p>
+                </div>
+            </div>
+
+
+            <div class="location-card" data-area="Lover's LeapRock ">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/107678230_large_1494204405.jpg?cache=1701317547');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Lover's Leap</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">203</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Granite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">466</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Sierra granite wall with moderate multipitch classics and stunning Lake Tahoe views.</p>
+                </div>
+            </div>
+
+            <!--
+            <div class="location-card" data-area="The NeedlesRock ">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/115332677_large_1537313910.jpg?cache=1722380471');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">The Needles</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">103</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Granite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">386</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">High-alpine granite spires in the Black Hills featuring unique crack climbing and exposed summits.</p>
+                </div>
+            </div>
+            -->
+
+            <div class="location-card" data-area="The New River Gorge Region">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/105949144_large_1558028669.jpg?cache=1755637726');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">New River Gorge</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">2,311</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Sandstone</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value"></span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Dense sport climbing paradise with overhanging sandstone and thousands of bolted routes.</p>
+                </div>
+            </div>
+<!--
+            <div class="location-card" data-area="red river gorge">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/105866030_medium_1557935178.jpg?cache=1701314757');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Red River Gorge</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value"></span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Sandstone</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value"></span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Kentucky's sport climbing mecca with endless pocketed sandstone and steep, powerful routes.</p>
+                </div>
+            </div>
+-->
+            <div class="location-card" data-area="Red RocksRock">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/106315937_large_1494096924.jpg?cache=1746710135');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Red Rocks</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">2,833</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Sandstone</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">7,528</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Spectacular red and white Aztec sandstone with world-class multipitch sport and trad routes.</p>
+                </div>
+            </div>
+            <!--
+            <div class="location-card" data-area="rumney" data-routes="1000" data-rock="Schist" data-images="5500">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/108388958_large_1494280356.jpg?cache=1751413938');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Rumney</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value"></span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Schist</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value"></span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">New Hampshire sport climbing hub with technical face climbing on compact, featured schist.</p>
+                </div>
+            </div>
+
+
+            <div class="location-card" data-area="Saint George">
+                <div class="card-image" style="background-image: url('https://cdn2.apstatic.com/photos/climb/106296990_large_1494101328.jpg');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Saint George</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">2,127</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Sandstone</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">2,184</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Southern Utah winter climbing haven with varied sandstone and volcanic rock formations.</p>
+                </div>
+            </div>
+            -->
+            <div class="location-card" data-area="Smith RockRock">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/112890011_large_1494452918.jpg?cache=1744219010');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Smith Rock</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">1,469</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Welded Tuff</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">2,293</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Birthplace of American sport climbing with volcanic tuff towers and cutting-edge routes.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="Squamish" data-routes="2000" data-rock="Granite" data-images="12000">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/105937894_large_1557951949.jpg?cache=1755439749');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Squamish</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">2,675</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Granite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">2,687</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Canada's climbing capital featuring the iconic Stawamus Chief and world-class granite walls.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="Tahquitz & Suicide Rocks">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/105830056_large_1557860905.jpg?cache=1701314693');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Tahquitz & Suicide</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">672</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Granite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">971</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Historic Southern California granite where the YDS was first created, you had to climb Valhalla to be coined a 'stonemaster'. For Southern California, Idyllwild is idyllic as a training ground for bigger objectives in the Sierras.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="Ten Sleep Canyon">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/106482613_large_1494112990.jpg?cache=1760053614');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Ten Sleep Canyon</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">978</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Limestone</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value"></span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">One of the premiere limestone sport climbing venues in the west, Ten Sleep is a 12-mile-long stretch of prestine pockets, edges, and chipped holds. Ten Sleep may be soft, but you're going for the rock ranch anyways.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="Tuolumne Meadows">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/105957831_large_1558029936.jpg?cache=1743179261');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Tuolumne Meadows</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">1,119</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Granite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">1,600</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">With an aura like no other, the quintessential knobs and runouts of the Meadows deserves the spotlights it receives. Nothing in the world beats finishing off the Tuolumne Triple Crown than a shower in Tenaya lake.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="Vedauwoo">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/106680042_large_1494131622.jpg?cache=1725900408');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Vedauwoo</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">1,294</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Sherman Granite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">1,525</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Unique offwidth paradise in Wyoming with bomber hand-stacked granite formations.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="Central Wasatch">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/106298476_large_1494095500.jpg?cache=1758128600');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Wasatch Range</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">3,832</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Quartzite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">5,966</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">Utah's local climbing scene with diverse limestone, granite, and quartzite near Salt Lake City.</p>
+                </div>
+            </div>
+
+            <div class="location-card" data-area="Yosemite Valley">
+                <div class="card-image" style="background-image: url('https://mountainproject.com/assets/photos/climb/113950515_large_1514060836.jpg?cache=1748882252');"></div>
+                <div class="card-overlay"></div>
+                <h2 class="area-name bebas-neue-regular">Yosemite Valley</h2>
+                <div class="card-details">
+                    <div class="details-row gabarito-regular">
+                        <div class="detail-column">
+                            <span class="detail-label">Routes</span>
+                            <span class="detail-value">1,858</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Rock Type</span>
+                            <span class="detail-value">Granite</span>
+                        </div>
+                        <div class="detail-column">
+                            <span class="detail-label">Images</span>
+                            <span class="detail-value">3,449</span>
+                        </div>
+                    </div>
+                    <p class="area-description gabarito-regular">The cathedral of big wall climbing with legendary granite formations like El Capitan and Half Dome.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/classic_mode.js') }}"></script>
+    <script>
+        // Card click handlers
+        const cards = document.querySelectorAll('.location-card');
+
+        cards.forEach(card => {
+            card.addEventListener('click', function() {
+                const area = this.getAttribute('data-area');
+                console.log('Selected area:', area);
+
+                // Navigate to the area-specific page
+                window.location.href = `/free-play/${encodeURIComponent(area)}`;
+            });
+        });
+    </script>
+</body>
+</html>
