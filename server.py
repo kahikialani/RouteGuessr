@@ -289,6 +289,12 @@ def load_user(user_id):
 def home():
     session.clear()
     today = date.today()
+    daily_completed = False
+    if current_user.is_authenticated:
+        attempt = DailyAttempt.query.filter_by(challenge_date=today, user_id = current_user.id).first()
+        if len(attempt.level_scores) == 5:
+            daily_completed = True
+
 
     leaderboard = (DailyAttempt.query.filter_by(
         challenge_date=today
