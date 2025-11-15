@@ -296,7 +296,8 @@ def home():
             daily_completed = True
 
 
-    leaderboard = (DailyAttempt.query.filter_by(
+
+    """leaderboard = (DailyAttempt.query.filter_by(
         challenge_date=today
     ).filter(
         DailyAttempt.level_scores.isnot(None),
@@ -305,35 +306,23 @@ def home():
         joinedload(DailyAttempt.user)
     ).order_by(
         DailyAttempt.total_score.desc()
-    ).all())
+    ).all())"""
 
     return render_template("index.html",
-                           leaderboard=leaderboard,
+                           #leaderboard=leaderboard,
+                           daily_completed = daily_completed,
                            date=today,
                            user=current_user)
 
-@app.after_request
-def add_cache_headers(response):
-    # Cache static files
-    if request.path.startswith('/static/'):
-        # In development, disable caching for CSS/JS to avoid stale files
-        if os.getenv('RENDER') is None:  # Development mode
-            if any(request.path.endswith(ext) for ext in ['.css', '.js']):
-                response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-                response.headers['Pragma'] = 'no-cache'
-                response.headers['Expires'] = '0'
-                return response
+@app.route("/about")
+def about():
+    return render_template("about.html")
 
-        # Images get long cache
-        if any(request.path.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']):
-            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
-        # CSS and JS get medium cache with revalidation in production
-        elif any(request.path.endswith(ext) for ext in ['.css', '.js']):
-            response.headers['Cache-Control'] = 'public, max-age=86400, must-revalidate'
-        # Fonts get long cache
-        elif any(request.path.endswith(ext) for ext in ['.woff', '.woff2', '.ttf', '.otf']):
-            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
-    return response
+@app.route("/terms")
+@app.route("/privacy")
+def terms_privacy():
+    return render_template("terms_privacy.html")
+
 
 
 # Daily Section
@@ -1008,4 +997,4 @@ if __name__ == '__main__':
         with app.app_context():
             db.create_all()
             print("Database initialized")
-    app.run(host='0.0.0.0', port=10000, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)
