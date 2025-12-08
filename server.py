@@ -217,7 +217,7 @@ class Calculations:
         else:
             return 'total-bad'
 
-def generate_free_play(area_name):
+def generate_free_play(area_ids_input):
     from random import choice, choices
     all_area_ids = [row.id for row in ClimbingArea.query.filter_by(area_name=area_name).all()]
     area_ids = choices(all_area_ids, k = 5)
