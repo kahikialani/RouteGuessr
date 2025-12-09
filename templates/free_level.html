@@ -69,6 +69,9 @@
         const LEVEL = {{ level }};
         const PIN_ICON = "{{ url_for('static', filename='images/user_pin.svg') }}";
         const CESIUM_KEY = "{{ cesium_key }}";
+        const base_lat = "{{ base_lat }}";
+        const base_lon = "{{ base_lon }}";
+        const zoom_level = "{{ zoom_level }}";
     </script>
     <script src="{{ url_for('static', filename='scripts/classic_mode.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/image_resize.js') }}"></script>
