@@ -219,8 +219,10 @@ class Calculations:
 
 def generate_free_play(area_ids_input):
     from random import choice, choices
-    all_area_ids = [row.id for row in ClimbingArea.query.filter_by(area_name=area_name).all()]
-    area_ids = choices(all_area_ids, k = 5)
+
+    all_area_ids = [int(area_id) for area_id in area_ids_input]
+    area_ids = choices(all_area_ids, k=5)
+    logging.debug(f"area_ids: {area_ids}")
 
     route_ids = []
     for area_id in area_ids:
@@ -233,7 +235,20 @@ def generate_free_play(area_ids_input):
         image = choice(all_images)
         img_ids.append(image.id)
 
-    data = {'area_ids': area_ids, 'route_ids': route_ids, 'img_ids': img_ids}
+    # If only one area is selected, return that area's coordinates
+    if len(all_area_ids) == 1:
+        area = ClimbingArea.query.filter_by(id=all_area_ids[0]).first()
+        area_lon = area.area_lon
+        area_lat = area.area_lat
+        zoom = 20000
+    else:
+        # For multiple areas, we'll need to calculate a center point or handle differently
+        # For now, set to None and handle in the route
+        area_lon = -103
+        area_lat = 34
+        zoom = 5999999
+
+    data = {'area_ids': area_ids, 'route_ids': route_ids, 'img_ids': img_ids, 'area_lat': area_lat, 'area_lon': area_lon, 'zoom': zoom}
     return data
 
 def generate_daily(entered_date = None):
@@ -296,21 +311,7 @@ def home():
         if attempt and len(attempt.level_scores) == 5:
             daily_completed = True
 
-
-
-    """leaderboard = (DailyAttempt.query.filter_by(
-        challenge_date=today
-    ).filter(
-        DailyAttempt.level_scores.isnot(None),
-        db.func.json_array_length(DailyAttempt.level_scores) == 5
-    ).options (
-        joinedload(DailyAttempt.user)
-    ).order_by(
-        DailyAttempt.total_score.desc()
-    ).all())"""
-
     return render_template("index.html",
-                           #leaderboard=leaderboard,
                            daily_completed = daily_completed,
                            date=today,
                            user=current_user)
@@ -320,9 +321,11 @@ def about():
     return render_template("about.html")
 
 @app.route("/terms")
+def terms_page():
+    return render_template("terms.html")
 @app.route("/privacy")
-def terms_privacy():
-    return render_template("terms_privacy.html")
+def privacy_page():
+    return render_template("privacy.html")
 
 
 
@@ -572,6 +575,7 @@ def daily_results():
                            total_score_class=total_score_class,
                            date=today)
 
+@app.route("/leaderboard")
 @app.route("/daily-leaderboard")
 def daily_leaderboard():
     today = date.today()
@@ -591,11 +595,15 @@ def daily_leaderboard():
     return render_template("leaderboard.html",
                            leaderboard=leaderboard,
                            date=today,
-                           user=current_user)
+                           current_user=current_user)
 
-@app.route("/free-play/<area_name>")
-def free_play(area_name):
-    data =  generate_free_play(area_name)
+@app.route("/free-play/<path:area_names>")
+def free_play(area_names):
+    # area_names can be a single area or comma-separated list of areas
+    # e.g., "/free-play/RedRocks" or "/free-play/RedRocks,Yosemite,JTree"
+    area_names_list = [name.strip() for name in area_names.split(',')]
+
+    data = generate_free_play(area_names_list)
     next_level = 1
 
     session['data'] = data
@@ -628,10 +636,19 @@ def free_play_level(level):
     image_id = data['img_ids'][int(level) - 1]
     image_url = RouteImage.query.filter_by(id=image_id).first().image_link
 
+    # Get base coordinates - if multiple areas (None), calculate from the specific area
+    base_lat = data.get('area_lat')
+    base_lon = data.get('area_lon')
+    zoom_level = data.get('zoom')
+
+
     total_score = session['total_score']
     logging.debug(session)
     return render_template("free_level.html",
+                           base_lat = base_lat,
+                           base_lon = base_lon,
                            image_url=image_url,
+                           zoom_level=zoom_level,
                            total_levels=5,
                            level=level,
                            current_total=total_score,
