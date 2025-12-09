@@ -170,8 +170,7 @@ body {
    ======================================== */
 .location-card:hover {
     transform: translateY(-8px);
-    border-color: var(--clr-primary);
-    box-shadow: 0 16px 40px rgba(255, 107, 53, 0.3);
+    box-shadow: 0 16px 20px rgba(255, 107, 53, 0.3);
 }
 
 .location-card:hover .card-image {
@@ -205,6 +204,107 @@ body {
 /* Active/click state */
 .location-card:active {
     transform: translateY(-6px);
+}
+
+/* ========================================
+   SELECTED STATE
+   ======================================== */
+.location-card.selected {
+    border-color: var(--clr-primary);
+    box-shadow: 0 16px 24px rgba(255, 107, 53, 0.25);
+}
+
+.location-card.selected .area-name {
+    color: var(--clr-primary);
+}
+
+/* ========================================
+   SELECT BUTTON STYLING
+   ======================================== */
+.select-button {
+    display: block;
+    margin: 0 auto;
+    padding: 10px 32px;
+    background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent));
+    color: var(--clr-text-white);
+    border: none;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+}
+
+.select-button:hover {
+    background: linear-gradient(135deg, var(--clr-accent), var(--clr-accent-bright));
+    transform: scale(1.02);
+}
+
+/* Unselect button style (when card is selected) */
+.location-card.selected .select-button {
+    background: rgba(128, 128, 128, 0.6);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.location-card.selected .select-button:hover {
+    background: rgba(128, 128, 128, 0.8);
+}
+
+/* ========================================
+   PLAY BUTTON (Fixed bottom right)
+   ======================================== */
+.play-button-container {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 100;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.play-button-container.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.play-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent));
+    color: var(--clr-text-white);
+    border: none;
+    border-radius: 40px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 8px 32px rgba(255, 107, 53, 0.4);
+}
+
+.play-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 40px rgba(255, 107, 53, 0.5);
+}
+
+.play-button .selection-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    font-size: 0.9rem;
 }
 
 /* ========================================
@@ -271,6 +371,19 @@ body {
     .area-description {
         font-size: 0.85rem;
         line-height: 1.5;
+    }
+
+    .play-button-container {
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+    }
+
+    .play-button {
+        width: 100%;
+        justify-content: center;
+        padding: 14px 24px;
+        font-size: 1rem;
     }
 }
 

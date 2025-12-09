@@ -249,7 +249,7 @@ body::after {
    HEADER / NAVIGATION
    ======================================== */
 .gradient-title {
-    position: fixed;
+    position: absolute;
     background: linear-gradient(0deg, var(--clr-primary), var(--clr-accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
