@@ -83,7 +83,7 @@
         </div>
       </a>
 
-      <a href="/legendary-lines" class="mode-card-link">
+      <a href="/legendary_lines" class="mode-card-link">
         <div class="mode-card">
           <div class="mode-header">
             <h3 class="archivo-regular">LEGENDARY LINES</h3>
@@ -155,7 +155,7 @@
           <h4 class="archivo-regular">LEGAL</h4>
           <ul class="pt-sans">
             <li><a href="/terms">Terms</a></li>
-            <li><a href="/privacy#privacy">Privacy</a></li>
+            <li><a href="/privacy">Privacy</a></li>
           </ul>
         </div>
       </div>
@@ -184,15 +184,13 @@
     menuLinks.forEach(link => {
       link.addEventListener('click', toggleMenu);
     });
-    const dailyCompleted = {{ daily_completed|tojson }}; // Change this to true to test completed state
+    const dailyCompleted = {{ daily_completed|tojson }};
 
     const dailyStatus = document.getElementById('dailyStatus');
 
-    // Set the appropriate state
     if (dailyCompleted) {
       dailyStatus.classList.add('completed');
 
-      // Only run countdown if daily is completed
       function updateCountdown() {
         const countdownElement = document.getElementById('dailyCountdown');
         if (!countdownElement) return;
