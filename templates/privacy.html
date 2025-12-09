@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROUTEGUESSR - Our Privacy Policy</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ROUTEGUESSR.png') }}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Gabarito:wght@400..900&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+        :root {
+            --clr-base: hsl(0 0 0);
+            --clr-cards: hsl(0 0 5%);
+            --clr-box-background: hsl(0 0 0 / .7);
+            --clr-text-white: hsl(0 0 95%);
+            --clr-text-light: hsl(0 0 70%);
+            --clr-text-gray: hsl(0 0 50%);
+            --clr-primary: hsl(16 100 60);
+            --clr-accent: hsl(32 93 54);
+            --clr-accent-bright: hsl(32 93 70);
+            --clr-primary-opacity: rgba(255, 107, 53, 0.8);
+            --brdr: 1px solid rgba(255, 255, 255, 0.1);
+            --box-shadow: 0 5px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .anton-regular {
+            font-family: "Anton", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .gabarito-regular {
+            font-family: "Gabarito", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            position: relative;
+            background: #0f0f0f;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg,
+                #1a0d08 0%,
+                #331a0d 25%,
+                #2d1610 50%,
+                #1f1412 75%,
+                #0f0f0f 100%
+            );
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(247, 147, 30, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 60%, rgba(255, 107, 53, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(230, 85, 39, 0.05) 0%, transparent 50%);
+            animation: gradientShift1 25s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        .gradient-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 70% 20%, rgba(255, 140, 66, 0.07) 0%, transparent 45%),
+                radial-gradient(ellipse at 30% 70%, rgba(247, 147, 30, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 90%, rgba(255, 107, 53, 0.04) 0%, transparent 40%);
+            animation: gradientShift2 30s ease-in-out infinite reverse;
+            z-index: -1;
+        }
+
+        @keyframes gradientShift1 {
+            0%, 100% {
+                opacity: 0.6;
+                transform: scale(1) rotate(0deg);
+            }
+            33% {
+                opacity: 0.8;
+                transform: scale(1.05) rotate(2deg);
+            }
+            66% {
+                opacity: 0.5;
+                transform: scale(0.98) rotate(-2deg);
+            }
+        }
+
+        @keyframes gradientShift2 {
+            0%, 100% {
+                opacity: 0.5;
+                transform: scale(1) translate(0, 0);
+            }
+            40% {
+                opacity: 0.7;
+                transform: scale(1.03) translate(20px, -10px);
+            }
+            70% {
+                opacity: 0.4;
+                transform: scale(0.97) translate(-15px, 15px);
+            }
+        }
+
+        .background-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 120%;
+            height: 120%;
+            background: url("{{ url_for('static', filename='images/YosemitePNG.png') }}");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            opacity: 5%;
+            filter: blur(3px);
+            z-index: -1;
+            animation: backgroundDrift 120s ease-in-out infinite;
+        }
+
+        @keyframes backgroundDrift {
+            0% {
+                transform: translate(0, 0) scale(1.15) rotate(0deg);
+            }
+            12% {
+                transform: translate(-30px, 20px) scale(1.16) rotate(0.5deg);
+            }
+            25% {
+                transform: translate(-50px, -10px) scale(1.14) rotate(-0.3deg);
+            }
+            37% {
+                transform: translate(-35px, -40px) scale(1.17) rotate(0.4deg);
+            }
+            50% {
+                transform: translate(0, -50px) scale(1.15) rotate(0deg);
+            }
+            62% {
+                transform: translate(35px, -30px) scale(1.16) rotate(-0.5deg);
+            }
+            75% {
+                transform: translate(55px, 10px) scale(1.14) rotate(0.3deg);
+            }
+            87% {
+                transform: translate(30px, 40px) scale(1.17) rotate(-0.2deg);
+            }
+            100% {
+                transform: translate(0, 0) scale(1.15) rotate(0deg);
+            }
+        }
+
+        .particle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 1px;
+            height: 4px;
+            border-radius: 50%;
+            filter: blur(1px);
+            box-shadow: 0 0 6px rgba(255, 140, 66, 0.5);
+            animation: particleFly linear infinite;
+        }
+
+        @keyframes particleFly {
+            0% {
+                transform: translate(0, 0);
+                opacity: 0;
+            }
+            5% {
+                opacity: 0.8;
+            }
+            95% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(var(--x-distance), var(--y-distance));
+                opacity: 0;
+            }
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--clr-text-white);
+            font-family: 'Anton', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 107, 53, 0.15);
+            border-color: var(--clr-primary);
+            transform: translateX(-3px);
+        }
+
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger span {
+            width: 30px;
+            height: 3px;
+            background: var(--clr-text-light);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger:hover span {
+            background: var(--clr-primary);
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 300px;
+            height: 100vh;
+            background: var(--clr-cards);
+            z-index: 999;
+            transition: right 0.3s ease;
+            padding: 80px 30px 30px;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu nav {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .mobile-menu a {
+            color: var(--clr-text-light);
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 15px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .mobile-menu a:hover {
+            color: var(--clr-primary);
+            padding-left: 20px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .terms-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 120px 20px 40px 20px;
+        }
+
+        .terms-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: var(--brdr);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 50px;
+            border-radius: 20px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            background-image: linear-gradient(135deg, var(--clr-primary), var(--clr-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            letter-spacing: 0.05em;
+            line-height: 1;
+            text-align: center;
+        }
+
+        .last-updated {
+            color: var(--clr-text-gray);
+            font-family: 'Gabarito', sans-serif;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-bottom: 40px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            color: var(--clr-primary);
+            font-family: 'Anton', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            letter-spacing: 0.05em;
+            border-left: 4px solid var(--clr-primary);
+            padding-left: 15px;
+        }
+
+        .subsection-title {
+            color: var(--clr-accent);
+            font-family: 'Anton', sans-serif;
+            font-size: 1.1rem;
+            margin: 20px 0 10px 0;
+            letter-spacing: 0.03em;
+        }
+
+        .section-content {
+            font-family: 'Gabarito', sans-serif;
+            color: var(--clr-text-light);
+            font-size: 1rem;
+            line-height: 1.7;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .section-content ul {
+            margin: 10px 0 10px 50px;
+            list-style-type: disc;
+        }
+
+        .section-content li {
+            margin-bottom: 8px;
+            margin-left: 2rem;
+            color: var(--clr-text-light);
+        }
+
+        .section-content strong {
+            color: var(--clr-text-white);
+            font-weight: 600;
+        }
+
+        .hyper-link {
+            color: var(--clr-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .hyper-link:hover {
+            color: var(--clr-accent-bright);
+        }
+
+        .highlight-box {
+            background: rgba(255, 107, 53, 0.1);
+            border-left: 3px solid var(--clr-primary);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+
+        @media (max-width: 640px) {
+            .back-button {
+                top: 15px;
+                left: 15px;
+                padding: 8px 15px;
+                font-size: 0.8rem;
+            }
+
+            .hamburger {
+                top: 15px;
+                right: 15px;
+            }
+
+            .terms-container {
+                padding: 100px 15px 30px 15px;
+            }
+
+            .terms-box {
+                padding: 30px 20px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+
+            .subsection-title {
+                font-size: 1rem;
+            }
+
+            .section-content {
+                font-size: 0.95rem;
+            }
+
+            .background-layer {
+                opacity: 15%;
+                filter: blur(1px);
+                animation: none;
+            }
+
+            body::after,
+            .gradient-layer {
+                animation: none !important;
+            }
+
+            .particle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="mobile-menu gabarito-regular" id="mobileMenu">
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/terms">Terms of Usage</a>
+            <a href="https://github.com/kahikialani/RouteGuessr" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+    </div>
+
+    <div class="gradient-layer"></div>
+    <div class="particle-container" id="particleContainer"></div>
+    <div class="background-layer"></div>
+
+    <a href="{{ url_for('home') }}" class="back-button">
+        <span>BACK TO HOME</span>
+    </a>
+
+    <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="terms-container">
+        <div class="terms-box" id="privacy">
+            <h1 class="page-title anton-regular">PRIVACY POLICY</h1>
+            <p class="last-updated">Last Updated: November 15, 2025</p>
+
+            <div class="section">
+                <h2 class="section-title">1. Introduction</h2>
+                <p class="section-content">
+                    This Privacy Policy explains how RouteGuessr collects, uses, and protects your personal information. We are committed to ensuring that your privacy is protected and that we handle your data responsibly.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">2. Information We Collect</h2>
+
+                <h3 class="subsection-title">2.1 Account Information</h3>
+                <p class="section-content">
+                    When you create an account on RouteGuessr, we collect and store the following information:
+                </p>
+                <ul class="section-content">
+                    <li><strong>Name:</strong> Your full name for account identification</li>
+                    <li><strong>Username:</strong> Your chosen display name for the platform</li>
+                    <li><strong>Email Address (Gmail):</strong> Your Gmail address for account verification and communication</li>
+                    <li><strong>Password:</strong> Your password, which is securely hashed using industry-standard encryption before storage</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <p class="section-content" style="margin-bottom: 0;">
+                        <strong>Security Note:</strong> We never store your password in plain text. All passwords are hashed using secure cryptographic algorithms, making them unreadable even to our administrators.
+                    </p>
+                </div>
+
+                <h3 class="subsection-title">2.2 Usage Data</h3>
+                <p class="section-content">
+                    We may automatically collect certain information about your device and how you interact with RouteGuessr, including:
+                </p>
+                <ul class="section-content">
+                    <li>Game scores and progress</li>
+                    <li>Browser type and version</li>
+                    <li>Pages visited and time spent on the website</li>
+                    <li>IP address and general geographic location</li>
+                    <li>Device type and operating system</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">3. How We Use Your Information</h2>
+                <p class="section-content">
+                    We use the collected information for the following purposes:
+                </p>
+                <ul class="section-content">
+                    <li><strong>Account Management:</strong> To create and maintain your user account</li>
+                    <li><strong>Authentication:</strong> To verify your identity when you log in</li>
+                    <li><strong>Communication:</strong> To send important service-related notifications (not marketing)</li>
+                    <li><strong>Game Features:</strong> To track your scores, progress, and leaderboard rankings</li>
+                    <li><strong>Service Improvement:</strong> To analyze usage patterns and improve the user experience</li>
+                    <li><strong>Security:</strong> To protect against unauthorized access and abuse</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">4. Data Storage and Security</h2>
+
+                <h3 class="subsection-title">4.1 Database Security</h3>
+                <p class="section-content">
+                    Your data is stored on a secure AWS PostgreSQL server with the following protections:
+                </p>
+                <ul class="section-content">
+                    <li>Encrypted connections (SSL/TLS) for data transmission</li>
+                    <li>Password hashing using bcrypt or similar algorithms</li>
+                    <li>Regular security updates and monitoring</li>
+                    <li>Access controls limiting who can view the database</li>
+                </ul>
+
+                <h3 class="subsection-title">4.2 Data Retention</h3>
+                <p class="section-content">
+                    We retain your personal information for as long as your account is active or as needed to provide you services. If you wish to delete your account and associated data, please contact us.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">5. Information Sharing and Disclosure</h2>
+                <p class="section-content">
+                    We do not sell, trade, or rent your personal information to third parties. We may share limited information only in the following circumstances:
+                </p>
+                <ul class="section-content">
+                    <li><strong>Public Leaderboards:</strong> Your username and game scores may be displayed on public leaderboards</li>
+                    <li><strong>Legal Requirements:</strong> When required by law or to protect our rights and safety</li>
+                    <li><strong>Service Providers:</strong> With trusted third-party service providers (e.g., AWS) who assist in operating our website, subject to strict confidentiality agreements</li>
+                </ul>
+                <div class="highlight-box">
+                    <p class="section-content" style="margin-bottom: 0;">
+                        <strong>Your email address and password are never shared publicly or with third parties for marketing purposes.</strong>
+                    </p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">6. Third-Party Content</h2>
+                <p class="section-content">
+                    RouteGuessr displays images and information sourced from <a href="https://www.mountainproject.com/" class="hyper-link" target="_blank" rel="noopener noreferrer">Mountain Project</a>. When you interact with this content, please be aware that Mountain Project has its own privacy policy and terms of service that govern their data collection practices.
+                </p>
+                <p class="section-content">
+                    We recommend reviewing Mountain Project's privacy policy if you have concerns about the climbing data and images displayed on our platform.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">7. Cookies and Tracking Technologies</h2>
+                <p class="section-content">
+                    RouteGuessr may use cookies and similar tracking technologies to:
+                </p>
+                <ul class="section-content">
+                    <li>Maintain your login session</li>
+                    <li>Remember your preferences</li>
+                    <li>Analyze website traffic and usage patterns</li>
+                </ul>
+                <p class="section-content">
+                    You can control cookie settings through your browser preferences. Note that disabling cookies may affect certain features of the website.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">8. Your Rights and Choices</h2>
+                <p class="section-content">
+                    You have the following rights regarding your personal information:
+                </p>
+                <ul class="section-content">
+                    <li><strong>Access:</strong> Request a copy of the personal information we hold about you</li>
+                    <li><strong>Correction:</strong> Update or correct inaccurate information</li>
+                    <li><strong>Deletion:</strong> Request deletion of your account and associated data</li>
+                    <li><strong>Opt-Out:</strong> Unsubscribe from non-essential communications</li>
+                    <li><strong>Data Portability:</strong> Request your data in a machine-readable format</li>
+                </ul>
+                <p class="section-content">
+                    To exercise these rights, please contact us using the information provided below.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">9. Children's Privacy</h2>
+                <p class="section-content">
+                    RouteGuessr is not intended for children under the age of 13. We do not knowingly collect personal information from children. If we become aware that we have collected information from a child under 13, we will take steps to delete that information promptly.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">10. Changes to Privacy Policy</h2>
+                <p class="section-content">
+                    We may update this Privacy Policy from time to time to reflect changes in our practices or for legal, operational, or regulatory reasons. We will notify users of any material changes by posting the updated policy on this page with a new "Last Updated" date.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">11. Contact Us</h2>
+                <p class="section-content">
+                    If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
+                </p>
+                <ul class="section-content">
+                    <li>Through the website's contact form</li>
+                    <li>By email at the address provided on our website</li>
+                </ul>
+                <p class="section-content">
+                    We will respond to all reasonable requests and inquiries within 30 days.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const overlay = document.getElementById('overlay');
+        const menuLinks = document.querySelectorAll('.mobile-menu a');
+
+        function toggleMenu() {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        hamburger.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        menuLinks.forEach(link => {
+            link.addEventListener('click', toggleMenu);
+        });
+    </script>
+    <script src="{{ url_for('static', filename='scripts/classic_mode.js') }}"></script>
+</body>
+</html>
