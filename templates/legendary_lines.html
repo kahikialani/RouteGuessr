@@ -1,1 +1,306 @@
-{% extends base.html %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROUTEGUESSR - Legendary Lines</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ROUTEGUESSR.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/root.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/legendary_lines.css') }}">
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="mobile-menu gabarito-regular" id="mobileMenu">
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="https://github.com/kahikialani/RouteGuessr" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+    </div>
+
+    <div class="gradient-layer"></div>
+    <div class="particle-container" id="particleContainer"></div>
+    <div class="background-layer"></div>
+
+    <a href="{{ url_for('home') }}" class="back-button">
+        <span>BACK TO HOME</span>
+    </a>
+
+    <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="content">
+        <div class="page-title anton-regular">LEGENDARY LINES</div>
+
+        <!-- AI Chat-style Description Container -->
+        <div class="desc-container">
+            <div class="chat-header">
+                <div class="chat-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
+                        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="chat-title">
+                    <span class="chat-title-name gabarito-regular">Route Oracle</span>
+                    <span class="chat-title-status">
+                        <span class="status-dot"></span>
+                        Describing route...
+                    </span>
+                </div>
+            </div>
+            <div class="chat-body">
+                <div class="chat-message">
+                    <div class="message-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
+                            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="message-content">
+                        <div class="section-content gabarito-regular" id="descriptionText"></div>
+                        <span class="typing-cursor" id="typingCursor"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wordle-style Search Container -->
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input
+                    type="text"
+                    class="search-input gabarito-regular"
+                    id="routeSearch"
+                    placeholder="Search for a route..."
+                    autocomplete="off"
+                >
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                    <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+
+                <div class="route-results" id="routeResults"></div>
+            </div>
+            <p class="search-hint gabarito-regular">Type to search routes by name</p>
+
+            <button class="submit-btn anton-regular" id="submitGuess">SUBMIT GUESS</button>
+        </div>
+    </div>
+
+    <script>
+        // Menu functionality
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const overlay = document.getElementById('overlay');
+        const menuLinks = document.querySelectorAll('.mobile-menu a');
+
+        function toggleMenu() {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        hamburger.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+        menuLinks.forEach(link => link.addEventListener('click', toggleMenu));
+
+        // Route data (will be populated from server)
+        let routeData = [];
+        let selectedRoute = null;
+
+        // Sample description for demo (will come from server)
+        const description = "This route ascends a prominent crack system on the northeast face of a prominent rock formation. It features sustained hand and finger crack climbing with excellent, bomber protection that readily accepts gear, particularly nuts. The crux involves crack-protected face climbing just below the summit. Climbers have the option to finish directly up the crack onto an arete or traverse left to a distinct flake. A communal multi-bolt anchor is present at the summit, suitable for rappelling with a single 50m rope.";
+
+        // Typing animation
+        const descriptionText = document.getElementById('descriptionText');
+        const typingCursor = document.getElementById('typingCursor');
+        let charIndex = 0;
+        const typingSpeed = 20; // ms per character
+
+        function typeDescription() {
+            if (charIndex < description.length) {
+                descriptionText.textContent += description.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeDescription, typingSpeed);
+            } else {
+                typingCursor.style.display = 'none';
+            }
+        }
+
+        // Start typing animation when page loads
+        setTimeout(typeDescription, 500);
+
+        // Search functionality
+        const searchInput = document.getElementById('routeSearch');
+        const routeResults = document.getElementById('routeResults');
+        const submitBtn = document.getElementById('submitGuess');
+
+        // Fetch route data from CSV
+        async function loadRouteData() {
+            try {
+                const response = await fetch('/api/legendary-lines/routes');
+                routeData = await response.json();
+            } catch (error) {
+                console.error('Error loading route data:', error);
+                // Fallback sample data for testing
+                routeData = [
+                    { name: "Illusion Dweller", location: "Joshua Tree National Park", grade: "5.10b", type: "Trad", pitches: 1, length: "100ft", url: "#", image: null },
+                    { name: "Leave it to Beaver", location: "Joshua Tree National Park", grade: "5.12a", type: "Trad", pitches: 1, length: "70ft", url: "#", image: null },
+                    { name: "Equinox", location: "Joshua Tree National Park", grade: "5.12c", type: "Trad", pitches: 1, length: "80ft", url: "#", image: null }
+                ];
+            }
+        }
+
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<mark>$1</mark>');
+        }
+
+        function createRouteCard(route, query) {
+            const card = document.createElement('div');
+            card.className = 'route-card';
+            card.dataset.routeName = route.name;
+
+            // Parse location to get crag and area
+            const locationParts = route.location ? route.location.split(' > ') : [];
+            const crag = locationParts[0] || '';
+            const area = locationParts[locationParts.length - 1] || '';
+
+            card.innerHTML = `
+                ${route.image
+                    ? `<img src="${route.image}" alt="${route.name}" class="route-image" onerror="this.outerHTML='<div class=\\'route-image-placeholder\\'><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\'><path d=\\'M12 2L2 19H22L12 2Z\\' stroke=\\'currentColor\\' stroke-width=\\'2\\'/></svg></div>'">`
+                    : `<div class="route-image-placeholder">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L2 19H22L12 2Z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                       </div>`
+                }
+                <div class="route-info">
+                    <div class="route-name gabarito-regular">${highlightMatch(route.name, query)}</div>
+                    <div class="route-location">${crag}${area && crag ? ' • ' : ''}${area}</div>
+                    <div class="route-tags">
+                        <span class="route-tag grade">${route.grade || 'N/A'}</span>
+                        <span class="route-tag type">${route.type || 'N/A'}</span>
+                        ${route.length ? `<span class="route-tag length">${route.length}</span>` : ''}
+                        ${route.pitches ? `<span class="route-tag pitches">${route.pitches} pitch${route.pitches > 1 ? 'es' : ''}</span>` : ''}
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener('click', () => selectRoute(route, card));
+            return card;
+        }
+
+        function selectRoute(route, card) {
+            // Remove previous selection
+            document.querySelectorAll('.route-card.selected').forEach(c => c.classList.remove('selected'));
+
+            // Select new route
+            card.classList.add('selected');
+            selectedRoute = route;
+            searchInput.value = route.name;
+
+            // Enable submit button
+            submitBtn.classList.add('active');
+
+            // Hide results
+            routeResults.classList.remove('active');
+        }
+
+        function filterRoutes(query) {
+            if (!query || query.length < 2) {
+                routeResults.classList.remove('active');
+                return;
+            }
+
+            const filtered = routeData.filter(route =>
+                route.name.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 8); // Limit to 8 results
+
+            routeResults.innerHTML = '';
+
+            if (filtered.length === 0) {
+                routeResults.innerHTML = '<div class="no-results">No routes found</div>';
+            } else {
+                filtered.forEach(route => {
+                    routeResults.appendChild(createRouteCard(route, query));
+                });
+            }
+
+            routeResults.classList.add('active');
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            selectedRoute = null;
+            submitBtn.classList.remove('active');
+            filterRoutes(e.target.value);
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.length >= 2) {
+                filterRoutes(searchInput.value);
+            }
+        });
+
+        // Close results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                routeResults.classList.remove('active');
+            }
+        });
+
+        // Handle submit
+        submitBtn.addEventListener('click', () => {
+            if (selectedRoute) {
+                console.log('Submitted guess:', selectedRoute);
+                // TODO: Send guess to server for validation
+            }
+        });
+
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', (e) => {
+            const cards = routeResults.querySelectorAll('.route-card');
+            const currentSelected = routeResults.querySelector('.route-card.selected');
+            let currentIndex = Array.from(cards).indexOf(currentSelected);
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (currentIndex < cards.length - 1) {
+                    cards[currentIndex]?.classList.remove('selected');
+                    cards[currentIndex + 1]?.classList.add('selected');
+                    cards[currentIndex + 1]?.scrollIntoView({ block: 'nearest' });
+                } else if (currentIndex === -1 && cards.length > 0) {
+                    cards[0].classList.add('selected');
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentIndex > 0) {
+                    cards[currentIndex]?.classList.remove('selected');
+                    cards[currentIndex - 1]?.classList.add('selected');
+                    cards[currentIndex - 1]?.scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const selected = routeResults.querySelector('.route-card.selected');
+                if (selected) {
+                    selected.click();
+                } else if (selectedRoute) {
+                    submitBtn.click();
+                }
+            }
+        });
+
+        // Load route data on page load
+        loadRouteData();
+    </script>
+</body>
+</html>
