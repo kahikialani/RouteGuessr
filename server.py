@@ -144,6 +144,52 @@ class RouteImage(db.Model):
 
     __table_args__ = (db.UniqueConstraint('route_id', 'image_link', name='_route_image_uc'),)
 
+class LegendaryLines(db.Model):
+    __tablename__ = 'legendary_lines'
+    id = db.Column(db.Integer, primary_key=True)
+    route_name = db.Column(db.String(255), nullable=False)
+    route_type = db.Column(db.String(255))
+    grade = db.Column(db.String(255))
+    pitches = db.Column(db.Integer)
+    length = db.Column(db.Float)
+    protection = db.Column(db.String(255))
+    main_area = db.Column(db.String(255))
+    crag = db.Column(db.String(255))
+    area_id = db.Column(db.Integer, db.ForeignKey('climbing_areas.id'))
+
+    area = db.relationship('ClimbingArea')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'route_name': self.route_name or '',
+            'route_type': self.route_type or '',
+            'grade': self.grade or '',
+            'pitches': self.pitches if self.pitches is not None else 0,
+            'length': float(self.length) if self.length is not None else 0,
+            'protection': self.protection or '',
+            'main_area': self.main_area or '',
+            'crag': self.crag or ''
+        }
+
+class MpDescriptions(db.Model):
+    __tablename__ = 'mp_descriptions'
+    id = db.Column(db.Integer, primary_key=True)
+    route_id = db.Column(db.Integer, db.ForeignKey('climbing_routes.id'), nullable=False)
+    description = db.Column(db.Text)
+    location = db.Column(db.Text)
+    protection = db.Column(db.Text)
+
+    route = db.relationship('ClimbingRoute')
+
+class MpComments(db.Model):
+    __tablename__ = 'mp_comments'
+    id = db.Column(db.Integer, primary_key=True)
+    route_id = db.Column(db.Integer, db.ForeignKey('climbing_routes.id'), nullable=False)
+    comment_text = db.Column(db.Text)
+
+    route = db.relationship('ClimbingRoute')
+
 class Calculations:
     def __init__(self):
         self.user_data = {
@@ -597,6 +643,9 @@ def daily_leaderboard():
                            date=today,
                            current_user=current_user)
 
+
+# Classic Mode Section
+
 @app.route("/free-play/<path:area_names>")
 def free_play(area_names):
     # area_names can be a single area or comma-separated list of areas
@@ -807,10 +856,69 @@ def free_play_end():
 def free_play_select():
     return render_template("free_select.html")
 
+# Legendary Lines Section
 
 @app.route("/legendary-lines/play")
 def legendary_lines_play():
-    return render_template("legendary_lines_play.html")
+    return render_template("legendary_lines.html")
+
+@app.route("/ll")
+def ll():
+    return render_template("ll.html")
+
+
+@app.route("/api/ll/search")
+def search_routes(area_id=1):
+    top200 = LegendaryLines.query.filter_by(area_id=area_id).all()
+
+    # Debug: find the problematic route
+    results = []
+    for i, route in enumerate(top200):
+        try:
+            d = route.to_dict()
+            # Test if it's JSON serializable
+            import json
+            json.dumps(d)
+            results.append(d)
+        except Exception as e:
+            print(f"Problem with route {i}: {route.route_name}")
+            print(f"Error: {e}")
+            print(f"Data: {route.__dict__}")
+
+    return jsonify(results)
+
+
+
+''''@app.route("/api/legendary-lines/routes")
+def legendary_lines_routes():
+    """Return route data for the legendary lines search feature"""
+    import csv
+    routes = []
+    csv_path = os.path.join(os.path.dirname(__file__), 'legendary_lines', 'data_collection', 'route-finder.csv')
+
+    try:
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                routes.append({
+                    'name': row.get('Route', ''),
+                    'location': row.get('Location', ''),
+                    'url': row.get('URL', ''),
+                    'grade': row.get('Rating', ''),
+                    'type': row.get('Route Type', ''),
+                    'pitches': int(row.get('Pitches', 0)) if row.get('Pitches', '').isdigit() else None,
+                    'length': f"{row.get('Length', '')}ft" if row.get('Length', '').isdigit() else row.get('Length', ''),
+                    'stars': float(row.get('Avg Stars', 0)) if row.get('Avg Stars', '') else None,
+                    'image': None  # Images would need to be fetched separately
+                })
+    except FileNotFoundError:
+        logging.error(f"Route CSV file not found at {csv_path}")
+        return jsonify([])
+    except Exception as e:
+        logging.error(f"Error reading route CSV: {e}")
+        return jsonify([])
+
+    return jsonify(routes)'''
 
 
 # ======================= APIs =======================
