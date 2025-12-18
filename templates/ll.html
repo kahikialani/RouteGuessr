@@ -62,119 +62,131 @@
         menuLinks.forEach(link => link.addEventListener('click', toggleMenu));
     </script>
     
-<script>
-    const searchInput = document.getElementById('searchInput');
-    const resultsDropdown = document.getElementById('resultsDropdown');
-    let debounceTimer;
-    let currentQuery = '';
-    let allRoutes = []; // Cache the routes
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            const resultsDropdown = document.getElementById('resultsDropdown');
+            let debounceTimer;
+            let currentQuery = '';
+            let allRoutes = [];
 
-    // Fetch all routes on page load (since you're filtering from top 200)
-    async function loadRoutes() {
-        try {
-            const response = await fetch('/api/ll/search');
-            allRoutes = await response.json();
-        } catch (error) {
-            console.error('Error loading routes:', error);
-        }
-    }
-    loadRoutes();
+            async function loadRoutes() {
+                try {
+                    const response = await fetch('/api/ll/search');
+                    allRoutes = await response.json();
+                    console.log('Loaded', allRoutes.length, 'routes');
+                } catch (error) {
+                    console.error('Error loading routes:', error);
+                }
+            }
+            loadRoutes();
 
-    searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.trim().toLowerCase();
-        currentQuery = query;
-        clearTimeout(debounceTimer);
-        
-        if (!query) {
-            resultsDropdown.classList.remove('active');
-            return;
-        }
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim().toLowerCase();
+                currentQuery = query;
+                
+                clearTimeout(debounceTimer);
+                
+                if (!query) {
+                    resultsDropdown.classList.remove('active');
+                    return;
+                }
 
-        debounceTimer = setTimeout(() => {
-            // Filter locally from cached routes
-            const filtered = allRoutes
-                .filter(route => route.route_name.toLowerCase().includes(query))
-                .slice(0, 5);
-            
-            renderResults(filtered, query);
-        }, 150);
-    });
+                debounceTimer = setTimeout(() => {
+                    const filtered = allRoutes
+                        .filter(route => route.route_name.toLowerCase().includes(query))
+                        .slice(0, 5);
+                    
+                    renderResults(filtered, query);
+                }, 150);
+            });
 
-    function renderResults(routes, query) {
-        if (routes.length === 0) {
-            resultsDropdown.innerHTML = '<div class="no-results">No routes found</div>';
-            resultsDropdown.classList.add('active');
-            return;
-        }
+            function renderResults(routes, query) {
+                if (routes.length === 0) {
+                    resultsDropdown.innerHTML = '<div class="no-results">No routes found</div>';
+                    resultsDropdown.classList.add('active');
+                    return;
+                }
 
-        resultsDropdown.innerHTML = routes.map(route => `
-            <div class="result-item" data-route-id="${route.id}">
-                <div class="route-name">${highlightMatch(route.route_name, query)}</div>
-                <div class="attributes">
-                    <span class="attribute-box attr-type">
-                        <span class="label">Type</span>
-                        <span class="value">${route.route_type || '-'}</span>
-                    </span>
-                    <span class="attribute-box attr-grade">
-                        <span class="label">Grade</span>
-                        <span class="value">${route.grade || '-'}</span>
-                    </span>
-                    <span class="attribute-box attr-length">
-                        <span class="label">Length</span>
-                        <span class="value">${route.length ? route.length + 'ft' : '-'}</span>
-                    </span>
-                    <span class="attribute-box attr-pitches">
-                        <span class="label">Pitches</span>
-                        <span class="value">${route.pitches || '-'}</span>
-                    </span>
-                    <span class="attribute-box attr-area">
-                        <span class="label">Area</span>
-                        <span class="value">${route.main_area || '-'}</span>
-                    </span>
-                    <span class="attribute-box attr-crag">
-                        <span class="label">Crag</span>
-                        <span class="value">${route.crag || '-'}</span>
-                    </span>
-                </div>
-            </div>
-        `).join('');
-        
-        resultsDropdown.classList.add('active');
-    }
+                // Header row
+                const header = `
+                    <div class="results-header">
+                        <div class="header-cell">Route</div>
+                        <div class="header-cell">Type</div>
+                        <div class="header-cell">Grade</div>
+                        <div class="header-cell">Length</div>
+                        <div class="header-cell">Pitches</div>
+                        <div class="header-cell">Area</div>
+                        <div class="header-cell">Crag</div>
+                    </div>
+                `;
 
-    function highlightMatch(text, query) {
-        if (!query || !text) return text || '';
-        const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
-        return text.replace(regex, '<span class="highlight">$1</span>');
-    }
+                // Result rows
+                const rows = routes.map(route => `
+                    <div class="result-item" data-route-id="${route.id}">
+                        <div class="attribute-box attr-name" data-label="Route">
+                            <span class="value">${route.route_name}</span>
+                        </div>
+                        <div class="attribute-box attr-type" data-label="Type">
+                            <span class="value">${route.route_type || '-'}</span>
+                        </div>
+                        <div class="attribute-box attr-grade" data-label="Grade">
+                            <span class="value">${route.grade || '-'}</span>
+                        </div>
+                        <div class="attribute-box attr-length" data-label="Length">
+                            <span class="value">${route.length ? route.length + 'ft' : '-'}</span>
+                        </div>
+                        <div class="attribute-box attr-pitches" data-label="Pitches">
+                            <span class="value">${route.pitches || '-'}</span>
+                        </div>
+                        <div class="attribute-box attr-area" data-label="Area">
+                            <span class="value">${route.main_area || '-'}</span>
+                        </div>
+                        <div class="attribute-box attr-crag" data-label="Crag">
+                            <span class="value">${route.crag || '-'}</span>
+                        </div>
+                    </div>
+                `).join('');
 
-    function escapeRegex(string) {
-        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
+                resultsDropdown.innerHTML = header + rows;
+                resultsDropdown.classList.add('active');
+            }
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-wrapper')) {
-            resultsDropdown.classList.remove('active');
-        }
-    });
+            function highlightMatch(text, query) {
+                if (!query || !text) return text || '';
+                const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+                return text.replace(regex, '<span class="highlight">$1</span>');
+            }
 
-    // Reopen on focus
-    searchInput.addEventListener('focus', () => {
-        if (currentQuery) {
-            resultsDropdown.classList.add('active');
-        }
-    });
+            function escapeRegex(string) {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
 
-    // Handle click on result
-    resultsDropdown.addEventListener('click', (e) => {
-        const item = e.target.closest('.result-item');
-        if (item) {
-            const routeId = item.dataset.routeId;
-            console.log('Selected route:', routeId);
-            // Add navigation or action here
-        }
-    });
-</script>
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-wrapper')) {
+                    resultsDropdown.classList.remove('active');
+                }
+            });
+
+            // Reopen on focus
+            searchInput.addEventListener('focus', () => {
+                if (currentQuery) {
+                    resultsDropdown.classList.add('active');
+                }
+            });
+
+            // Handle click on result
+            resultsDropdown.addEventListener('click', (e) => {
+                const item = e.target.closest('.result-item');
+                if (item) {
+                    const routeId = item.dataset.routeId;
+                    console.log('Selected route:', routeId);
+                    // Add your navigation or action here
+                }
+            });
+        });
+    </script>
+
 </body>
 </html>
