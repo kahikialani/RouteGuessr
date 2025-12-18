@@ -53,6 +53,9 @@ class LegendaryLines(Base):
     protection = Column(String(255))
     main_area = Column(String(255))
     crag = Column(String(255))
+    area_id = Column(Integer, ForeignKey('climbing_areas.id'))
+
+    area = relationship('ClimbingArea')
 
 
 class MpDescriptions(Base):
@@ -203,7 +206,7 @@ def db_upload_comments(db_session, route_id, comments):
     db_session.commit()
     logging.info(f"Added {len(comments)} new comment(s) for route_id: {route_id}")
 
-def db_upload_lines(db_session, df):
+def db_upload_lines(db_session, df, area_id):
     for index, row in df.iterrows():
         new_route = LegendaryLines(
             route_name = row['Route'],
@@ -213,7 +216,8 @@ def db_upload_lines(db_session, df):
             grade = row['Grade'],
             protection = row['Protection'],
             main_area = row['Main Area'],
-            crag = row['Crag']
+            crag = row['Crag'],
+            area_id = area_id
         )
         db_session.add(new_route)
     db_session.commit()
@@ -246,7 +250,7 @@ if __name__ == '__main__':
 
     if session:
         top_200 = get_top_200(index_main_area)
-        db_upload_lines(db_session, top_200)
+        db_upload_lines(db_session, top_200, AREA_ID)
         for index, row in top_200.iterrows():
             route_url = row['URL']
             route_name = row['Route']
