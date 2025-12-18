@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROUTEGUESSR - Legendary Lines</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ROUTEGUESSR.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/root.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/ll.css') }}">
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="mobile-menu gabarito-regular" id="mobileMenu">
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/how2play">How to Play</a>
+            <a href="https://github.com/kahikialani/RouteGuessr" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+    </div>
+
+    <div class="gradient-layer"></div>
+    <div class="particle-container" id="particleContainer"></div>
+    <div class="background-layer"></div>
+
+    <a href="{{ url_for('home') }}" class="back-button">
+        <span>BACK TO HOME</span>
+    </a>
+
+    <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="content">
+        <div class="page-title anton-regular">LEGENDARY LINES</div>
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input type="text" class="search-input" id="searchInput" placeholder="Route searcher..." autocomplete="off">
+                <div class="results-dropdown" id="resultsDropdown"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Menu functionality
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const overlay = document.getElementById('overlay');
+        const menuLinks = document.querySelectorAll('.mobile-menu a');
+
+        function toggleMenu() {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        hamburger.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+        menuLinks.forEach(link => link.addEventListener('click', toggleMenu));
+    </script>
+    
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const resultsDropdown = document.getElementById('resultsDropdown');
+    let debounceTimer;
+    let currentQuery = '';
+    let allRoutes = []; // Cache the routes
+
+    // Fetch all routes on page load (since you're filtering from top 200)
+    async function loadRoutes() {
+        try {
+            const response = await fetch('/api/ll/search');
+            allRoutes = await response.json();
+        } catch (error) {
+            console.error('Error loading routes:', error);
+        }
+    }
+    loadRoutes();
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        currentQuery = query;
+        clearTimeout(debounceTimer);
+        
+        if (!query) {
+            resultsDropdown.classList.remove('active');
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            // Filter locally from cached routes
+            const filtered = allRoutes
+                .filter(route => route.route_name.toLowerCase().includes(query))
+                .slice(0, 5);
+            
+            renderResults(filtered, query);
+        }, 150);
+    });
+
+    function renderResults(routes, query) {
+        if (routes.length === 0) {
+            resultsDropdown.innerHTML = '<div class="no-results">No routes found</div>';
+            resultsDropdown.classList.add('active');
+            return;
+        }
+
+        resultsDropdown.innerHTML = routes.map(route => `
+            <div class="result-item" data-route-id="${route.id}">
+                <div class="route-name">${highlightMatch(route.route_name, query)}</div>
+                <div class="attributes">
+                    <span class="attribute-box attr-type">
+                        <span class="label">Type</span>
+                        <span class="value">${route.route_type || '-'}</span>
+                    </span>
+                    <span class="attribute-box attr-grade">
+                        <span class="label">Grade</span>
+                        <span class="value">${route.grade || '-'}</span>
+                    </span>
+                    <span class="attribute-box attr-length">
+                        <span class="label">Length</span>
+                        <span class="value">${route.length ? route.length + 'ft' : '-'}</span>
+                    </span>
+                    <span class="attribute-box attr-pitches">
+                        <span class="label">Pitches</span>
+                        <span class="value">${route.pitches || '-'}</span>
+                    </span>
+                    <span class="attribute-box attr-area">
+                        <span class="label">Area</span>
+                        <span class="value">${route.main_area || '-'}</span>
+                    </span>
+                    <span class="attribute-box attr-crag">
+                        <span class="label">Crag</span>
+                        <span class="value">${route.crag || '-'}</span>
+                    </span>
+                </div>
+            </div>
+        `).join('');
+        
+        resultsDropdown.classList.add('active');
+    }
+
+    function highlightMatch(text, query) {
+        if (!query || !text) return text || '';
+        const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+        return text.replace(regex, '<span class="highlight">$1</span>');
+    }
+
+    function escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-wrapper')) {
+            resultsDropdown.classList.remove('active');
+        }
+    });
+
+    // Reopen on focus
+    searchInput.addEventListener('focus', () => {
+        if (currentQuery) {
+            resultsDropdown.classList.add('active');
+        }
+    });
+
+    // Handle click on result
+    resultsDropdown.addEventListener('click', (e) => {
+        const item = e.target.closest('.result-item');
+        if (item) {
+            const routeId = item.dataset.routeId;
+            console.log('Selected route:', routeId);
+            // Add navigation or action here
+        }
+    });
+</script>
+</body>
+</html>
