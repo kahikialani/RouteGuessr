@@ -8,6 +8,7 @@ from sqlalchemy.ext.mutable import MutableList
 from datetime import date, datetime
 import os
 import logging
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 try:
@@ -30,6 +31,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 3600,
     'pool_pre_ping': True,
 }
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 db = SQLAlchemy(app)
 
