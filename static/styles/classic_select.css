@@ -224,18 +224,22 @@ body {
 .select-button {
     display: block;
     margin: 0 auto;
-    padding: 10px 32px;
+    padding: 10px 24px;
+    min-width: 100px;
+    max-width: 100%;
     background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent));
     color: var(--clr-text-white);
     border: none;
     border-radius: 25px;
-    font-size: 0.95rem;
+    font-size: clamp(0.75rem, 2.5vw, 0.95rem);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
     flex-shrink: 0;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .select-button:hover {
@@ -373,6 +377,11 @@ body {
         line-height: 1.5;
     }
 
+    .select-button {
+        padding: 8px 20px;
+        letter-spacing: 0.5px;
+    }
+
     .play-button-container {
         bottom: 20px;
         right: 20px;
@@ -450,6 +459,11 @@ body {
     .area-description {
         font-size: 0.8rem;
         line-height: 1.4;
+    }
+
+    .select-button {
+        padding: 8px 16px;
+        letter-spacing: 0;
     }
 }
 
