@@ -172,6 +172,17 @@
     const overlay = document.getElementById('overlay');
     const menuLinks = document.querySelectorAll('.mobile-menu a');
 
+    document.addEventListener('DOMContentLoaded', function() {
+        const hero = document.querySelector('.hero');
+
+        const highRes = new Image();
+        highRes.src = '/static/images/jt_sunset.jpg';
+
+        highRes.onload = () => {
+            hero.style.backgroundImage = `url('${highRes.src}')`;
+        };
+    });
+
     function toggleMenu() {
       hamburger.classList.toggle('active');
       mobileMenu.classList.toggle('active');
