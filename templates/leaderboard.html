@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROUTEGUESSR - Leaderboard</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ROUTEGUESSR.png') }}">
+    <link href="{{ url_for('static', filename='styles/leaderboard.css')}}" rel="stylesheet"/>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="mobile-menu gabarito-regular" id="mobileMenu">
+        <nav>
+            <a href="/">Home</a>
+            <a href="/profile">Profile</a>
+            <a href="/about">About</a>
+            <a href="/terms">Terms & Privacy</a>
+        </nav>
+    </div>
+
+    <div class="gradient-layer"></div>
+    <div class="particle-container" id="particleContainer"></div>
+    <div class="background-layer"></div>
+
+    <a href="{{ url_for('home') }}" class="back-button">
+        <span>BACK TO HOME</span>
+    </a>
+
+    <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="leaderboard-container">
+        <div class="leaderboard-box">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1 class="main-title anton-regular">DAILY LEADERBOARD</h1>
+                <p class="date gabarito-regular">{{ date.strftime('%B %d, %Y') }}</p>
+            </div>
+
+            <!-- Leaderboard Table -->
+            <div class="leaderboard-wrapper">
+                {% if leaderboard and leaderboard|length > 0 %}
+                    <div class="leaderboard-table">
+                        <!-- Table Header -->
+                        <div class="table-header">
+                            <div class="rank-col gabarito-regular">RANK</div>
+                            <div class="name-col gabarito-regular">PLAYER</div>
+                            <div class="level-col gabarito-regular">L1</div>
+                            <div class="level-col gabarito-regular">L2</div>
+                            <div class="level-col gabarito-regular">L3</div>
+                            <div class="level-col gabarito-regular">L4</div>
+                            <div class="level-col gabarito-regular">L5</div>
+                            <div class="total-col gabarito-regular">TOTAL</div>
+                        </div>
+
+                        <!-- Table Body -->
+                        <div class="table-body">
+                            {% for attempt in leaderboard %}
+                                <div class="table-row {% if current_user.is_authenticated and attempt.user.id == current_user.id %}current-user{% endif %}">
+                                    <div class="rank-col anton-regular">
+                                        {% if loop.index <= 3 %}
+                                            <span class="rank-badge rank-{{ loop.index }}">{{ loop.index }}</span>
+                                        {% else %}
+                                            {{ loop.index }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="name-col gabarito-regular">
+                                        {{ attempt.user.username }}
+                                        {% if current_user.is_authenticated and attempt.user.id == current_user.id %}
+                                            <span class="you-badge">YOU</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="level-col pt-sans">{{ "{:,}".format(attempt.level_scores[0]) }}</div>
+                                    <div class="level-col pt-sans">{{ "{:,}".format(attempt.level_scores[1]) }}</div>
+                                    <div class="level-col pt-sans">{{ "{:,}".format(attempt.level_scores[2]) }}</div>
+                                    <div class="level-col pt-sans">{{ "{:,}".format(attempt.level_scores[3]) }}</div>
+                                    <div class="level-col pt-sans">{{ "{:,}".format(attempt.level_scores[4]) }}</div>
+                                    <div class="total-col anton-regular">{{ "{:,}".format(attempt.total_score) }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="no-results">
+                        <p class="gabarito-regular">No one has completed today's challenge yet. Be the first!</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('daily') }}" class="btn btn-primary anton-regular">
+                        PLAY DAILY CHALLENGE
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-primary anton-regular">
+                        LOGIN TO PLAY
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const overlay = document.getElementById('overlay');
+        const menuLinks = document.querySelectorAll('.mobile-menu a');
+
+        function toggleMenu() {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        hamburger.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        menuLinks.forEach(link => {
+            link.addEventListener('click', toggleMenu);
+        });
+    </script>
+    <script src="{{ url_for('static', filename='scripts/classic_mode.js') }}"></script>
+</body>
+</html>
