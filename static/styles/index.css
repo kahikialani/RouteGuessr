@@ -73,6 +73,7 @@ body {
 }
 
 .hero {
+  background-color: #1a1a1a;
   background-image: url('/static/images/jt_sunset.jpg');
   background-size: cover;
   background-position: center;
