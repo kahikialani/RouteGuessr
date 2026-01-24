@@ -20,6 +20,7 @@
   </div>
 
   <div class="hero">
+      <div class="hero-highres"></div>
     <div class="header">
       <img src="" class="logo" alt="">
       <div class="hamburger" id="hamburger">
@@ -173,13 +174,13 @@
     const menuLinks = document.querySelectorAll('.mobile-menu a');
 
     document.addEventListener('DOMContentLoaded', function() {
-        const hero = document.querySelector('.hero');
-
+        const highResDiv = document.querySelector('.hero-highres');
         const highRes = new Image();
-        highRes.src = '/static/images/jt_sunset.jpg';
+        highRes.src = '/static/images/jt_sunset.jpg'; // full-res image
 
         highRes.onload = () => {
-            hero.style.backgroundImage = `url('${highRes.src}')`;
+            highResDiv.style.backgroundImage = `url('${highRes.src}')`;
+            highResDiv.style.opacity = '1'; // fade in
         };
     });
 

@@ -73,16 +73,37 @@ body {
 }
 
 .hero {
+  position: relative;
   background-color: #1a1a1a;
-  background-image: url('/static/images/jt_sunset_low.jpg');
+  background-image: url('/static/images/jt_sunset_low.jpg'); /* low-res placeholder */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  transition: background-image 0.3s ease-in-out;
   min-height: 100vh;
   width: 100%;
+  overflow: hidden;
 }
+
+.hero-highres {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: none; /* will be set by JS */
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 0; /* above low-res background but below content */
+}
+
+.landing-container {
+  position: relative;
+  z-index: 1; /* above high-res overlay */
+}
+
+
+
 
 .header {
   position: fixed;
@@ -93,7 +114,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 15px 30px;
-  z-index: 1000;
+  z-index: 2; /* above everything */
 }
 
 .logo {
