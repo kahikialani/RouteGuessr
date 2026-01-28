@@ -137,7 +137,7 @@ body::after {
     background-repeat: no-repeat;
     background-size: cover;
     opacity: 5%;
-    filter: blur(3px);
+    filter: blur(7px);
     z-index: -1;
     animation: backgroundDrift 120s ease-in-out infinite;
 }
