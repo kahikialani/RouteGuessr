@@ -864,6 +864,10 @@ def free_play_select():
 def legendary_lines_play():
     return render_template("legendary_lines.html")
 
+@app.route("/legendary-lines")
+def legendary_lines_select():
+    return render_template("legendary_lines_select.html")
+
 @app.route("/ll")
 def ll():
     return render_template("ll.html")
