@@ -42,29 +42,23 @@ class ClimbingRoute(Base):
 
 # Define New Tables (mp_descriptions, mp_comments, top_area_routes, TODO gen_descriptions )
 
-class LegendaryLines(Base):
-    __tablename__ = 'legendary_lines'
-    id = Column(Integer, primary_key=True)
-    route_name = Column(String(255), nullable=False)
-    route_type = Column(String(255))
-    grade = Column(String(255))
-    pitches = Column(Integer)
-    length = Column(Float)
-    protection = Column(String(255))
-    main_area = Column(String(255))
-    crag = Column(String(255))
-    area_id = Column(Integer, ForeignKey('climbing_areas.id'))
-
-    area = relationship('ClimbingArea')
-
 
 class MpDescriptions(Base):
     __tablename__ = 'mp_descriptions'
     id = Column(Integer, primary_key=True)
     route_id = Column(Integer, ForeignKey('climbing_routes.id'), nullable=False)
+    route_name = Column(String(255), nullable=False)
     description = Column(Text)
     location = Column(Text)
     protection = Column(Text)
+    route_type = Column(Text)
+    pitches = Column(Integer)
+    length = Column(Integer)
+    grade = Column(Text)
+    protection_rating = Column(Text)
+    main_area = Column(Text)
+    crag = Column(Text)
+    area_id = Column(Integer)
 
     route = relationship('ClimbingRoute')
 
@@ -77,7 +71,7 @@ class MpComments(Base):
 
     route = relationship('ClimbingRoute')
 
-def init_db(key):
+def init_db(key, exist=True):
     engine = create_engine(key)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
@@ -118,10 +112,10 @@ def create_authenticated_session(account, password):
         return session
 
 
-def get_top_200(index_main_area):
+def get_top(index_main_area, num_top):
     pd.set_option('display.max_columns', None)
     top_routes = pd.read_csv('route-finder.csv')
-    top_routes = top_routes[:200]
+    top_routes = top_routes[:int(num_top)]
 
     top_routes = top_routes.drop(columns=['Avg Stars','Your Stars','Area Latitude','Area Longitude'], axis=1)
 
@@ -185,12 +179,21 @@ def get_route_info(route_url, session):
 
 # Update tables
 
-def db_upload_desc(db_session, route_id, desc, location, protection):
+def db_upload_desc(db_session, route_id, route_name, description, location, protection, route_type, pitches, length, grade, protection_rating, main_area, crag, area_id):
     new_entry = MpDescriptions(
         route_id=route_id,
-        description=desc,
+        route_name=route_name,
+        description=description,
         location=location,
-        protection=protection
+        protection=protection,
+        route_type=route_type,
+        pitches=pitches,
+        length=length,
+        grade=grade,
+        protection_rating=protection_rating,
+        main_area=main_area,
+        crag=crag,
+        area_id=area_id
     )
     db_session.add(new_entry)
     db_session.commit()
@@ -206,29 +209,12 @@ def db_upload_comments(db_session, route_id, comments):
     db_session.commit()
     logging.info(f"Added {len(comments)} new comment(s) for route_id: {route_id}")
 
-def db_upload_lines(db_session, df, area_id):
-    for index, row in df.iterrows():
-        new_route = LegendaryLines(
-            route_name = row['Route'],
-            route_type = row['Route Type'],
-            pitches = row['Pitches'],
-            length = row['Length'],
-            grade = row['Grade'],
-            protection = row['Protection'],
-            main_area = row['Main Area'],
-            crag = row['Crag'],
-            area_id = area_id
-        )
-        db_session.add(new_route)
-    db_session.commit()
-    logging.info(f"Uploaded {len(df)} lines for Legendary Lines Table")
-
-
 if __name__ == '__main__':
     MP_ACCOUNT = os.getenv('MP_EMAIL')
     MP_PASSWORD = os.getenv('MP_PASSWORD')
     NEON_CONNECTION = os.getenv('NEON_URL')
-    AREA_ID = '1'
+    AREA_ID = input('Please enter area ID: ')
+    num_top = input('Enter the total number of routes you would like to create: ')
     index_main_area = -3 # This is the index of the main area desired within the csv
 
     # For Example,
@@ -249,11 +235,17 @@ if __name__ == '__main__':
     session = create_authenticated_session(MP_ACCOUNT, MP_PASSWORD)
 
     if session:
-        top_200 = get_top_200(index_main_area)
-        db_upload_lines(db_session, top_200, AREA_ID)
-        for index, row in top_200.iterrows():
+        top_routes = get_top(index_main_area, num_top)
+        for index, row in top_routes.iterrows():
             route_url = row['URL']
             route_name = row['Route']
+            route_type = row['Route Type']
+            pitches = row['Pitches']
+            length = row['Length']
+            grade = row['Grade']
+            protection_rating = row['Protection']
+            main_area = row['Main Area']
+            crag = row['Crag']
 
             description, location, protection, comments = get_route_info(route_url, session)
             print(f"Route Name: {route_name} \n")
@@ -270,7 +262,7 @@ if __name__ == '__main__':
                 continue
             route_id = route.id
 
-            db_upload_desc(db_session, route_id, description, location, protection)
+            db_upload_desc(db_session, route_id, route_name, description, location, protection, route_type, pitches, length, grade, protection_rating, main_area, crag, AREA_ID)
             db_upload_comments(db_session, route_id, comments)
 
             time.sleep(5)
