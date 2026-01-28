@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ROUTEGUESSR - LEGENDARY LINES</title>
+    <link href="{{ url_for('static', filename='styles/legendary_lines_base.css')}}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='styles/legendary_lines_select.css')}}" rel="stylesheet"/>
+</head>
+<body>
+    <div class="gradient-layer"></div>
+    <div class="particle-container" id="particleContainer"></div>
+    <div class="background-layer"></div>
+    <a class="gradient-title anton-regular" href="/">ROUTEGUESSR</a>
+    <div class="container">
+        <div class="archivo-regular page-title">LEGENDARY LINES</div>
+        <div class="bebas-neue-regular page-subtitle">Select your favorite climbing area!</div>
+        <div class="selection-container">
+            <div class="area-list">
+                <div class="list-item active"></div>
+            </div>
+            <div class="list-preview">
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const climbingAreas = [
+            {
+                id: 1,
+                name: "BISHOP BOULDERING",
+                location: "EASTERN SIERRA, California",
+                image: "{{ url_for('static', filename='images/bishop.jpg') }}",
+                description: "Nestled in the Eastern Sierra at the gateway to the high country, Bishop has evolved from a sleepy mountain town into the undisputed bouldering capital of North America. With world-class volcanic rock scattered across the Buttermilks, Happy Boulders, and Sad Boulders, Bishop offers an unparalleled density of hard, quality problems that have humbled and inspired generations of climbers.<br><br>The Buttermilks alone host some of the most iconic boulder problems ever established—from the powerful Mandala to the technical wizardry of Evilution, from the burly Ambrosia to the delicate Buttermilk Traverse. These classics, along with thousands of other problems ranging from V0 to V16, are set on bulletproof volcanic tuff that rewards technique, power, and persistence in equal measure. The area exploded in popularity through the 1990s and 2000s, with climbers like John Gill, John Bachar, and Chris Sharma establishing benchmarks that defined entire generations of difficulty.<br><br>The crisp fall and spring conditions, the endless sea of crashpads beneath alpine boulders, and the tight-knit community of dirtbags and crushers make it more than a climbing area. With over 2,000 established problems, year-round sport and trad climbing at nearby crags, and some of the most photogenic bouldering in the world, Bishop has rightfully earned its place as a pilgrimage destination for anyone serious about climbing hard on stone.",
+                difficulty: {
+                    easy: '109 boulders &nbsp; V0 - V3',
+                    medium: '&nbsp;&nbsp;&nbsp;| &nbsp;&nbsp;&nbsp; 95 boulders &nbsp;V4 - V7 &nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;',
+                    hard: '46 routes&nbsp; V8 or harder'
+                }
+            },
+            {
+                id: 2,
+                name: "EL DORADO CANYON",
+                location: "Boulder, Colorado",
+                image: "{{ url_for('static', filename='images/eldo.jpg') }}",
+                description: "Just minutes from Boulder, Colorado, El Dorado Canyon stands as one of America's most historic and intimidating climbing areas. Rising 700 feet from the canyon floor, these golden Fountain Formation sandstone walls have witnessed over a century of climbing evolution and continues to demand respect from anyone who dares to venture up it's steep, technical faces.<br><br>Eldorado built its fearsome reputation on runout, technical climbing that requires both physical and mental fortitude. Classic testpieces like The Naked Edge, Jules Verne, and Rosy Crucifixion showcase the area's character: sustained climbing on featured sandstone with gear that's often small and/or sparse. The rock quality varies from bulletproof to crumbly, adding another layer of consequence to routes where ground falls are a realistic threat. This is where climbers like Layton Kor, Pat Ament, and later Tommy Caldwell cut their teeth, learning that commitment and composure matter as much as raw climbing strength.<br><br>Despite—or perhaps because of—its serious nature, Eldorado has cultivated a devoted following of climbers who relish the mental game as much as the physical challenge. With over 1,000 routes ranging from moderate multipitch classics to cutting-edge sport climbs, spectacular autumn colors, and year-round access, the canyon remains a rite of passage for Colorado climbers. No matter the test-piece, Eldorado Canyon will test everything you thought you knew about climbing.",
+                difficulty: {
+                    easy: 30,
+                    medium: 45,
+                    hard: 25
+                }
+            },
+            {
+                id: 3,
+                name: "INDIAN CREEK",
+                location: "Canyon Lands, Utah",
+                image: "{{ url_for('static', filename='images/creek.jpg') }}",
+                description: "Carved deep into the red sandstone desert of southeastern Utah, Indian Creek is the undisputed mecca of crack climbing. With hundreds of perfectly parallel splitters soaring up Wingate sandstone walls, the Creek offers the purest, most unforgiving test of crack technique anywhere on Earth. If you desire to test your technique, endurance, and strength, this is where many have come and tried.<br><br>What makes Indian Creek legendary isn't just the quantity of cracks, but their unrelenting consistency. These aren't varied, featured climbs—they're pure, single size splitters that demand flawless jamming technique from bottom to top. Routes like Supercrack of the Desert, Swedin-Ringle, Big Baby, The Optimator, and Belly Full of Bad Berries have become the gold standard by which crack climbing ability is measured worldwide. The grades are notoriously subjective; a Creek 5.10 will test climbers who cruise 5.11 elsewhere if you have small hands, where-as those will smaller digits will find routes like Digital Readout NOT 5.13.<br><br>Beyond the technical challenge, Indian Creek offers an experience steeped in desert solitude and climbing purity. The vast red rock walls, the endless blue sky, easy camping on BLM land, and the simple pleasure of hand-stacking through perfect stone create a meditative quality found nowhere else. With over 1,500 routes ranging from off-width nightmares to fingertip seams, and a welcoming community of dirtbags, Indian Creek remains the ultimate proving ground for anyone who wants to truly master the art of jamming.",
+                difficulty: {
+                    easy: 30,
+                    medium: 45,
+                    hard: 25
+                }
+            },
+            {
+                id: 5,
+                name: "JOSHUA TREE",
+                location: "Mojave Desert, California",
+                image: "{{ url_for('static', filename='images/intersection.jpg') }}",
+                description: "A true wonderland of rocks within the desert, Joshua Tree maintains its 'sandbagged' reputation by hosting scary, traditionally bolted sport climbs, funky trad routes, and thousands of unique boulder problems. The park's distinctive monzogranite formations create an otherworldly landscape where massive boulders are stacked in gravity-defying piles, offering endless opportunities for climbers to explore cracks, faces, and problems that exist nowhere else on Earth.<br><br>Joshua Tree National Park was majorly popularized by the Stonemasters, legends like John Bachar, John Long, and Lynn Hill, who used this place as their winter training ground throughout the 1970s and 80s. Nestled just outside of Los Angeles, the climbing boom in recent years has dramatically increased the popularity of climbing within the park. The area's reputation for sandbagging has only grown stronger as more climbers discover that grades here earn their stripes the hard way. Routes that look moderate from the ground often involve committing runouts, tricky sequences, and rock that demands respect. The bouldering is equally humbling, with classics like Stem Gem, The Flake, and Gunsmoke offering powerful, technical challenges on textured granite that shreds skin and tests resolve.<br><br>Nevertheless, you can be certain to find climbers of all pedigrees seeking out the many challenges the park has to offer. With over 8,000 catalogued routes and problems, the wild dirtbag scene camping among the Joshua trees, and mild winter weather that makes it climbable when most areas are frozen or sweltering, it's no wonder why Joshua Tree has become one of the United States' premiere winter climbing destinations. The sunsets, the star-filled skies, and the unique desert ecosystem create an experience that transcends the climbing itself.",
+                difficulty: {
+                    easy: '149 routes &nbsp; 5.0 - 5.9',
+                    medium: '&nbsp;&nbsp;&nbsp;| &nbsp;&nbsp;&nbsp; 76 routes &nbsp;5.10a - 5.10d &nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;',
+                    hard: '25 routes&nbsp; 5.11a &nbsp;or harder'
+                }
+            },
+            {
+                id: 7,
+                name: "THE NEEDLES",
+                location: "Kern River Valley, California",
+                image: "{{ url_for('static', filename='images/needles.jpg') }}",
+                description: "Hidden deep in the High Sierra backcountry above Kernville, the Needles are a collection of dramatic granite spires that offer some of California's most remote and alpine climbing experiences. Accessible only by a winding mountain road that climbs to over 7,000 feet, these formations reward the journey with pristine granite, stunning alpine views, and a wilderness solitude that's increasingly rare in modern climbing.<br><br>The Needles themselves are a geologist's dream and a climber's playground. Dozens of distinct towers and formations, each with its own character, offer everything from moderate scrambles to serious technical challenges. Classic formations like Witch's Needle, Warlock Needle, and Sorcerer's Needle feature steep granite faces, exposed ridges, and varied climbing that tests every skill. The rock quality is exceptional Sierra granite: solid, featured, and perfect for both crack climbing and face moves. Unlike the Valley's scale or Tuolumne's runout slabs, the Needles offer compact, intense routes where technical climbing and creative problem solving matter more than endurance.<br><br>What truly defines the Needles experience is the setting. Perched high in the Sierra with views stretching across the Kern Plateau and Great Western Divide, climbing here feels like a genuine mountain adventure. The approach hikes, the cool summer temperatures at elevation, and the sense of discovery on less-traveled routes create an experience closer to mountaineering than sport climbing. With fewer crowds than Yosemite and routes that range from scrambles to serious alpine testpieces, the Needles remain a hidden gem for climbers seeking adventure in California's high country wilderness.",
+                difficulty: {
+                    easy: 30,
+                    medium: 45,
+                    hard: 25
+                }
+            },
+            {
+                id: 8,
+                name: "RED ROCKS",
+                location: "Las Vegas, Nevada",
+                image: "{{ url_for('static', filename='images/redrock.jpg') }}",
+                description: "Rising from the waters of Howe Sound in British Columbia, Squamish is home to the Chief, a massive granite monolith that dominates the skyline and offers over 2,000 routes on some of the most spectacular rock in North America. Just an hour north of Vancouver, Squamish has evolved from a sleepy logging town into Canada's premier climbing destination, drawing climbers worldwide to test themselves on its steep, featured granite walls.<br><br>The Chief itself is split into three distinct summits, each offering multipitch climbing that ranges from moderate classics to desperate testpieces. Routes like The Squamish Buttress, Diedre, and University Wall have become rite of passage climbs, their clean cracks and exposed faces demanding solid technique and mental composure. Beyond the Chief, the Smoke Bluffs provide endless single-pitch sport and trad climbing, while Murrin Park offers roadside cragging with stunning views. The granite here is characteristically coastal: solid, clean, and often steep, with features that reward those who've mastered face climbing, liebacking, and dynamic movement. Modern masters like Sonnie Trotter and Will Stanhope have pushed standards here with cutting-edge free climbs that showcase what's possible on Squamish stone.<br><br>What makes Squamish truly special is its setting. Climbing beneath towering granite walls with views of the Pacific Ocean, surrounded by temperate rainforest and coastal mountains, creates an atmosphere unlike anywhere else. Prime season runs from May through October when the rain holds off, and the area's proximity to Vancouver makes it accessible while maintaining a wilderness feel. With routes at every grade and a vibrant climbing community, Squamish stands as the crown jewel of Canadian rock climbing.",
+                difficulty: {
+                    easy: 30,
+                    medium: 45,
+                    hard: 25
+                }
+            },
+            {
+                id: 11,
+                name: "SQUAMISH",
+                location: "British Colombia, Canada",
+                image: "{{ url_for('static', filename='images/squamish.jpg') }}",
+                description: "Rising dramatically from the Mojave Desert just 20 minutes west of the Las Vegas Strip, Red Rocks is a sprawling wonderland of Aztec and Navajo sandstone that offers some of the most diverse and spectacular climbing in North America. With over 2,000 routes spread across towering buttresses, hidden canyons, and soaring walls that glow crimson in the desert sun, Red Rocks has evolved from a local Vegas secret into an international climbing destination.<br><br>What sets Red Rocks apart is its sheer variety. The area encompasses everything from single-pitch sport cragging at the Gallery and Calico Basin to committing 2,000-foot multipitch adventures like Crimson Chrysalis and Dream of Wild Turkeys. The sandstone itself is a study in contrasts: some routes follow perfect hand cracks through bomber red rock, while others navigate delicate faces where holds can snap without warning and protection is an exercise in creativity. This variability demands adaptability, route-finding skills, and respect for the rock's fickle nature. The area's reputation was built by climbers like Joe Herbst, Joanne and Jorge Urioste, and the Hubers, who saw potential in these red walls and established classics that remain testpieces today.<br><br>Red Rocks shines brightest during the fall, winter, and spring months when the desert comes alive and temperatures are perfect for climbing. The unique combination of Vegas amenities and wilderness climbing, stunning desert vistas, and routes at every grade make it a year-round haven for climbers seeking adventure in the Southwest's most iconic red rock landscape.",
+                difficulty: {
+                    easy: 30,
+                    medium: 45,
+                    hard: 25
+                }
+            },
+            {
+                id: 12,
+                name: "TAHQUITZ & SUICIDE",
+                location: "Idyllwild, California",
+                image: "{{ url_for('static', filename='images/tahquitz.jpg') }}",
+                description: "Towering above the mountain town of Idyllwild in Southern California's San Jacinto Mountains, Tahquitz and Suicide Rocks represent the birthplace of technical rock climbing in America. These imposing granite domes, rising over 1,000 feet from the pine-studded slopes, hosted some of the earliest ascents in American climbing history and continue to offer classic multipitch adventures that have stood the test of time.<br><br>Tahquitz Rock, first climbed in the 1930s, became the training ground for California's climbing elite. Legends like Royal Robbins, Yvon Chouinard, and Tom Frost honed their skills here before taking on Yosemite's big walls, establishing testpieces like The Trough, Piton Pooper, and the Angel's Fright that pushed the standards of their era. Suicide Rock, slightly lower but equally committing, offers its own collection of stellar routes including the exposed Smooth Sole and the wandering adventures up its south face. The rock is characteristically Southern California granite—solid, featured, and often runout, demanding climbers to think and move with confidence.<br><br>At 8,000 feet elevation, these crags offer a refreshing escape from the desert heat, with prime climbing conditions in spring and fall when the valleys below are sweltering. With over 200 routes ranging from moderate classics to modern hard testpieces, stunning views across the desert, and a rich climbing heritage that predates Yosemite's Golden Age, Tahquitz and Suicide remain essential destinations for anyone seeking to understand the roots of American rock climbing.",
+                difficulty: {
+                    easy: 30,
+                    medium: 45,
+                    hard: 25
+                }
+            },
+            {
+                id: 14,
+                name: "TUOLUMNE MEADOWS",
+                location: "Yosemite High Country, California",
+                image: "{{ url_for('static', filename='images/peace.jpg') }}",
+                description: "Perched at 8,600 feet in Yosemite's high country, Tuolumne Meadows offers an alpine climbing experience unlike anywhere else in California. Known for its pristine white granite domes, long runouts, and stunning Sierra Nevada backdrop, Tuolumne represents the purest form of friction climbing on some of the most beautiful rock in North America.<br><br>While Yosemite Valley built its reputation on crack climbing and big walls, Tuolumne Meadows carved its own legacy through bold face climbing and knob pulling. Classics like the Crying Time Again on Lembert Dome and the Bachar-Yerian on the Medlicott Dome exemplify the area's character—technical slab climbing with sparse protection that demands confidence, precise footwork, and mental composure. The area's Golden Age saw climbers like John Bachar soloing these routes with a grace that still inspires awe today.<br><br>With over 400 routes spread across dozens of domes—from beginner-friendly friction slabs to cutting-edge testpieces—Tuolumne offers summer climbing in a pristine wilderness setting. The crisp mountain air, wildflower meadows, and absence of crowds make it a sanctuary for climbers seeking both challenge and solitude. Whether you're navigating the runout slabs of Daff Dome or tackling the sustained cracks of Cathedral Peak, Tuolumne Meadows stands as the ultimate high-altitude granite playground.",
+                difficulty: {
+                    easy: 30,
+                    medium: 45,
+                    hard: 25
+                }
+            },
+            {
+                id: 15,
+                name: "YOSEMITE VALLEY",
+                location: "Yosemite, California",
+                image: "{{ url_for('static', filename='images/elcap.jpg') }}",
+                description: "Coined as the 'Center of the Universe', Yosemite Valley stands as the crown jewel of American rock climbing. Home to the most iconic granite walls on Earth-El Capitan, Half Dome, Watkins, the Sentinel, and the Cathedral Spires—this glacially carved valley has defined the greater part of rock climbing in the United States.<br><br>Pioneered by legends like Royal Robbins, Yvon Chouinard, and Warren Harding in the Golden Age, Yosemite's walls have witnessed the evolution of climbing itself. From multi-day aid climbs to speed records and free climbing breakthroughs by the likes Lynn Hill, Tommy Caldwell, and Alex Honnold, the valley continues to push the boundaries of human achievement. The sheer scale of these walls—rising thousands of feet from the valley floor—demands not just technical skill but mental fortitude and commitment unlike anywhere else.<br><br>While the big walls draw the headlines, Yosemite offers world-class climbing at every grade. From the classic beginner routes at Swan Slab, to the finger-shredding splitters of the Cookie Cliffs, to speed-record ascents up El Cap, climbers of all abilities can test themselves on some of the finest granite in the world. With over 1,000 routes ranging from moderate multipitch adventures to cutting-edge testpieces, Yosemite Valley remains the ultimate pilgrimage for any serious climber.",
+                difficulty: {
+                    easy: '20 5.9s',
+                    medium: 50,
+                    hard: 30
+                }
+            }
+        ];
+
+        let selectedAreaId = 1;
+
+        // Initialize the list and preview on page load
+        function initializeAreaSelector() {
+            renderAreaList();
+            updatePreview(selectedAreaId);
+        }
+
+        // Render the list of climbing areas
+        function renderAreaList() {
+            const listContainer = document.querySelector('.area-list');
+            listContainer.innerHTML = '';
+            
+            climbingAreas.forEach(area => {
+                const listItem = document.createElement('div');
+                listItem.className = `list-item ${area.id === selectedAreaId ? 'active' : ''}`;
+                listItem.onclick = () => selectArea(area.id);
+                
+                listItem.innerHTML = `
+                    <div class="bebas-neue-regular">${area.name}</div>
+                `;
+                
+                listContainer.appendChild(listItem);
+            });
+        }
+
+        // Scroll item to center if it's near the edge
+        function scrollToCenter(item) {
+            const areaList = document.querySelector('.area-list');
+            const listRect = areaList.getBoundingClientRect();
+            const itemRect = item.getBoundingClientRect();
+
+            // Calculate how far into the visible area the item is (as a percentage)
+            const itemCenter = itemRect.left + itemRect.width / 2;
+            const listLeft = listRect.left;
+            const listRight = listRect.right;
+            const listWidth = listRect.width;
+
+            // Check if item is in the leftmost 20% or rightmost 20% of visible area
+            const positionInList = (itemCenter - listLeft) / listWidth;
+
+            if (positionInList < 0.2 || positionInList > 0.8) {
+                // Calculate scroll position to center the item
+                const itemCenterRelative = item.offsetLeft + item.offsetWidth / 2;
+                const scrollTarget = itemCenterRelative - listWidth / 2;
+
+                areaList.scrollTo({
+                    left: scrollTarget,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // Handle area selection
+        function selectArea(areaId) {
+            selectedAreaId = areaId;
+
+            const clickedItem = event.currentTarget;
+
+            // Update list item active states
+            document.querySelectorAll('.list-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            clickedItem.classList.add('active');
+
+            // Scroll to center if near edge
+            scrollToCenter(clickedItem);
+
+            // Update the preview panel
+            updatePreview(areaId);
+        }
+
+        // Update the preview panel with selected area details
+        function updatePreview(areaId) {
+            const area = climbingAreas.find(a => a.id === areaId);
+            if (!area) return;
+            
+            const previewContainer = document.querySelector('.list-preview');
+            
+            previewContainer.innerHTML = `
+                <div class="preview-header">
+                    <div class="preview-text">
+                        <div class="anton-regular preview-title">${area.name}</div>
+                        <div class="bebas-neue-regular location-text">${area.location}</div>
+                        <div class="bebas-neue-regular difficulty">${area.difficulty.easy} ${area.difficulty.medium} ${area.difficulty.hard}</div>
+                        <button class="play-button" onclick="playArea(${area.id})">
+                            <span class="play-button-text archivo-regular">PLAY NOW</span>
+                            </span>
+                        </button>
+                    </div>
+                    <div class="preview-image" style="background-image: url('${area.image}');"></div>
+                </div>
+                <div class="pt-sans preview-info">
+                    ${area.description}
+                </div>
+            `;
+        }
+
+        // Handle play button click
+        function playArea(areaId) {
+            console.log(`Starting game with area ID: ${areaId}`);
+            // Redirect to game page or trigger game start
+            window.location.href = `/legendary-lines/play=${areaId}`;
+            // Or if using SPA routing:
+            // startGame(areaId);
+        }
+
+        // Call initialization when DOM is ready
+        document.addEventListener('DOMContentLoaded', initializeAreaSelector);
+        
+
+
+
+        function initScrollFade() {
+            const areaList = document.querySelector('.area-list');
+
+            function updateFade() {
+                const scrollLeft = areaList.scrollLeft;
+                const scrollWidth = areaList.scrollWidth;
+                const clientWidth = areaList.clientWidth;
+                const scrollRight = scrollWidth - scrollLeft - clientWidth;
+
+                const atLeft = scrollLeft < 10;
+                const atRight = scrollRight < 10;
+
+                let maskGradient;
+
+                if (atLeft && atRight) {
+                    maskGradient = 'linear-gradient(to right, black 0%, black 100%)';
+                } else if (atLeft) {
+                    maskGradient = 'linear-gradient(to right, black 0%, black 85%, transparent 100%)';
+                } else if (atRight) {
+                    maskGradient = 'linear-gradient(to right, transparent 0%, black 15%, black 100%)';
+                } else {
+                    maskGradient = 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)';
+                }
+
+                areaList.style.maskImage = maskGradient;
+                areaList.style.webkitMaskImage = maskGradient;
+            }
+
+            areaList.addEventListener('scroll', updateFade);
+            updateFade();
+        }
+
+        function initSmoothScroll() {
+            const areaList = document.querySelector('.area-list');
+
+            areaList.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                areaList.scrollLeft += e.deltaY * 3;
+            }, { passive: false });
+        }
+
+        // Call this after DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeAreaSelector();
+            initScrollFade();
+            initSmoothScroll();
+        });
+    </script>
+</body>
+</html>
