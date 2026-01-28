@@ -178,9 +178,18 @@ class MpDescriptions(db.Model):
     __tablename__ = 'mp_descriptions'
     id = db.Column(db.Integer, primary_key=True)
     route_id = db.Column(db.Integer, db.ForeignKey('climbing_routes.id'), nullable=False)
+    route_name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text)
     location = db.Column(db.Text)
     protection = db.Column(db.Text)
+    route_type = db.Column(db.Text)
+    pitches = db.Column(db.Integer)
+    length = db.Column(db.Integer)
+    grade = db.Column(db.Text)
+    protection_rating = db.Column(db.Text)
+    main_area = db.Column(db.Text)
+    crag = db.Column(db.Text)
+    area_id = db.Column(db.Integer)
 
     route = db.relationship('ClimbingRoute')
 
@@ -339,6 +348,32 @@ def generate_daily(entered_date = None):
     db.session.commit()
 
     return new_daily
+
+def generate_legendary_lines(area_id):
+    from random import choice
+
+    all_routes_in_area = MpDescriptions.query.filter_by(area_id=area_id).all()
+    route = choice(all_routes_in_area)
+    logging.debug(f"route: {route.route_name}")
+
+    chosen_route_id = route.route_id
+    comments = MpComments.query.filter_by(route_id=chosen_route_id).limit(5).all()
+    logging.debug(f"comments: {comments}")
+
+    route_name = route.route_name
+    description_string = route.description
+    route_grade = route.grade
+    length = route.length
+    crag = route.crag
+    area_name = route.main_area
+    comment_string = ""
+    for comment in comments:
+        comment_string += f"{comment.comment_text}"
+
+    prompt = f"Generate a description of this rock climbing route. Do not give specific details (exact route name, exact crag name, exact difficulty). The goal is for users to guess what the route is. The Route is {route_name}, {route_grade}, {length}ft long, at the crag {crag} in area {area_name}. Description: {description_string}. Five user comments: {comment_string}."
+
+    logging.debug(f"prompt: {prompt}")
+
 
 
 # ======================= FLASK DECORATORS =======================
@@ -860,17 +895,22 @@ def free_play_select():
 
 # Legendary Lines Section
 
-@app.route("/legendary-lines/play")
+@app.route("/legendary-lines/test")
 def legendary_lines_play():
     return render_template("legendary_lines.html")
+
+@app.route("/ll")
+def ll():
+    return render_template("ll.html")
 
 @app.route("/legendary-lines")
 def legendary_lines_select():
     return render_template("legendary_lines_select.html")
 
-@app.route("/ll")
-def ll():
-    return render_template("ll.html")
+@app.route("/legendary-lines/play=<area_id>")
+def legendary_lines_level(area_id):
+    generate_legendary_lines(area_id)
+    return render_template("legendary_lines_level.html")
 
 
 @app.route("/api/ll/search")
