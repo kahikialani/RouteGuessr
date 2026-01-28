@@ -191,7 +191,15 @@ document.getElementById('resetNorthButton').addEventListener('click', function()
 });
 
 // Map type toggle functionality
-let isRoadMap = false;
+let isRoadMap = true;
+
+// Set OpenStreetMap as the default layer
+viewer.imageryLayers.removeAll();
+viewer.imageryLayers.addImageryProvider(
+    new Cesium.OpenStreetMapImageryProvider({
+        url: 'https://tile.openstreetmap.org/'
+    })
+);
 const toggleMapTypeButton = document.getElementById('toggleMapTypeButton');
 const mapTypeLabel = document.getElementById('mapTypeLabel');
 
