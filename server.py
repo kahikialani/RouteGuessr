@@ -351,6 +351,8 @@ def generate_daily(entered_date = None):
 
 def generate_legendary_lines(area_id):
     from random import choice
+    from google import genai
+    from google.genai import types
 
     all_routes_in_area = MpDescriptions.query.filter_by(area_id=area_id).all()
     route = choice(all_routes_in_area)
@@ -365,15 +367,45 @@ def generate_legendary_lines(area_id):
     route_grade = route.grade
     length = route.length
     crag = route.crag
-    area_name = route.main_area
+    sub_area = route.main_area
     comment_string = ""
+    main_area = "Joshua Tree National Park"
     for comment in comments:
         comment_string += f"{comment.comment_text}"
 
-    prompt = f"Generate a description of this rock climbing route. Do not give specific details (exact route name, exact crag name, exact difficulty). The goal is for users to guess what the route is. The Route is {route_name}, {route_grade}, {length}ft long, at the crag {crag} in area {area_name}. Description: {description_string}. Five user comments: {comment_string}."
+    prompt = f"The Route is {route_name}, {route_grade}, {length}ft long, at the crag {crag} in sub area of {sub_area}, in {main_area}. Description: {description_string}. Five user comments: {comment_string}."
 
     logging.debug(f"prompt: {prompt}")
 
+    client = genai.Client(
+        api_key=os.getenv("GEMINI_API_KEY"),
+    )
+
+    model = "gemini-flash-lite-latest"
+    contents = [
+        types.Content(
+            role="user",
+            parts=[
+                types.Part.from_text(text=prompt),
+            ],
+        ),
+    ]
+    generate_content_config = types.GenerateContentConfig(
+        thinking_config=types.ThinkingConfig(
+            thinking_budget=0,
+        ),
+        system_instruction=[
+            types.Part.from_text(text="""Provide a sentenced, detailed summary of a rock climbing route based on a route's description and comments. Users are meant to guess which route the generated description is about. Do not include overly specific details to give this away (exact route name, exact crag name, exact difficulty, exact length), but hints towards those aspects is acceptable. Sub-area can occasionally be specified. Main area is already known by user. Naming conventions: cracks should be called cracks, refer to the climb as either a route or a boulder. Difficulty, 5.0 - 5.6 are easy. 5.7 - 5.10(a, b, c, and d) are moderate, 5.11a - 5.12a are hard, and 5.12b and higher are considered testpieces."""),
+        ],
+    )
+
+    for chunk in client.models.generate_content_stream(
+            model=model,
+            contents=contents,
+            config=generate_content_config,
+    ):
+        yield f"data: {chunk.text}\n\n"
+    yield "data: [DONE]\n\n"
 
 
 # ======================= FLASK DECORATORS =======================
@@ -901,6 +933,7 @@ def legendary_lines_play():
 
 @app.route("/ll")
 def ll():
+    generate_legendary_lines(5)
     return render_template("ll.html")
 
 @app.route("/legendary-lines")
@@ -909,8 +942,14 @@ def legendary_lines_select():
 
 @app.route("/legendary-lines/play=<area_id>")
 def legendary_lines_level(area_id):
-    generate_legendary_lines(area_id)
-    return render_template("legendary_lines_level.html")
+    return render_template("legendary_lines_level.html", area_id=area_id)
+
+@app.route("/legendary-lines/stream/<area_id>")
+def legendary_lines_stream(area_id):
+    from flask import stream_with_context, Response
+    return Response(stream_with_context(generate_legendary_lines(area_id)), mimetype='text/event-stream')
+
+
 
 
 @app.route("/api/ll/search")
