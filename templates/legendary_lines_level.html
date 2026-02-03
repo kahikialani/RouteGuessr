@@ -13,6 +13,16 @@
     <a class="gradient-title anton-regular" href="/">ROUTEGUESSR</a>
     <div class="container">
         <div class="archivo-regular page-title">LEGENDARY LINES</div>
+        <div class="description-container">
+            <div class="chat-header">
+                <span class="chat-title-name bebas-neue-regular">Route Description</span>
+            </div>
+            <div class="description-body">
+                <div class="description-message">
+                    <div class="message-content pt-sans"></div>                   
+                </div>
+            </div>
+        </div>
         <div class="selection-container">
             <div class="area-list">
                 <div class="list-item active"></div>
@@ -22,5 +32,42 @@
             </div>
         </div>
     </div>
+    <script>
+        const areaId = "{{ area_id }}";
+        const source = new EventSource(`/legendary-lines/stream/${areaId}`);
+        const container = document.querySelector('.message-content');
+        container.textContent = '';
+
+        let charQueue = [];
+        let typing = false;
+        let charDelay = 0.5; // ms per character — adjust this to control speed
+
+        function typeNextChar() {
+            if (charQueue.length === 0) {
+                typing = false;
+                return;
+            }
+            container.textContent += charQueue.shift();
+            setTimeout(typeNextChar, charDelay);
+        }
+
+        function enqueueText(text) {
+            for (const ch of text) {
+                charQueue.push(ch);
+            }
+            if (!typing) {
+                typing = true;
+                typeNextChar();
+            }
+        }
+
+        source.onmessage = (event) => {
+            if (event.data === '[DONE]') {
+                source.close();
+                return;
+            }
+            enqueueText(event.data);
+        };
+    </script>
 </body>
 </html>
