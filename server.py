@@ -193,6 +193,21 @@ class MpDescriptions(db.Model):
 
     route = db.relationship('ClimbingRoute')
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'route_id': self.route_id or '',
+            'route_name': self.route_name or '',
+            'route_type': self.route_type or '',
+            'pitches': self.pitches if self.pitches is not None else 0,
+            'length': float(self.length) if self.length is not None else 0,
+            'grade': self.grade or '',
+            'protection_rating': self.protection_rating or '',
+            'main_area': self.main_area or '',
+            'crag': self.crag or '',
+            'area_id': self.area_id or ''
+        }
+
 class MpComments(db.Model):
     __tablename__ = 'mp_comments'
     id = db.Column(db.Integer, primary_key=True)
@@ -359,6 +374,7 @@ def generate_legendary_lines(area_id):
     logging.debug(f"route: {route.route_name}")
 
     chosen_route_id = route.route_id
+    yield f"data: ROUTE_ID:{chosen_route_id}\n\n"
     comments = MpComments.query.filter_by(route_id=chosen_route_id).limit(5).all()
     logging.debug(f"comments: {comments}")
 
@@ -948,17 +964,19 @@ def legendary_lines_level(area_id):
 def legendary_lines_stream(area_id):
     from flask import stream_with_context, Response
     return Response(stream_with_context(generate_legendary_lines(area_id)), mimetype='text/event-stream')
+    #return 'debug'
 
 
 
 
 @app.route("/api/ll/search")
-def search_routes(area_id=1):
-    top200 = LegendaryLines.query.filter_by(area_id=area_id).all()
+def search_routes():
+    area_id = request.args.get('area_id', default=0, type=int)
+    top_climbs = MpDescriptions.query.filter_by(area_id=area_id).all()
 
     # Debug: find the problematic route
     results = []
-    for i, route in enumerate(top200):
+    for i, route in enumerate(top_climbs):
         try:
             d = route.to_dict()
             # Test if it's JSON serializable
