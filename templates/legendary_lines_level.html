@@ -17,13 +17,25 @@
             <div class="chat-header">
                 <span class="chat-title-name bebas-neue-regular">Route Description</span>
             </div>
-            <div class="description-body">
+            <div class="description-body" id="descriptionBody">
                 <div class="description-message">
-                    <div class="message-content pt-sans"></div>                   
+                    <div class="message-content gabarito-regular"></div>
                 </div>
             </div>
         </div>
-        <div class="selection-container">
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input type="text" class="search-input beb" id="routeSearch" placeholder="Search for a route..." autocomplete="off">
+            </div>
+        </div>
+
+        <!-- Guesses display container -->
+        <div class="guesses-container" id="guessesContainer">
+            <div class="guesses-list" id="guessesList"></div>
+        </div>
+
+        <!-- Search results container -->
+        <div class="selection-container" id="searchResultsContainer">
             <div class="area-list">
                 <div class="list-item active"></div>
             </div>
@@ -34,30 +46,39 @@
     </div>
     <script>
         const areaId = "{{ area_id }}";
-        const source = new EventSource(`/legendary-lines/stream/${areaId}`);
+        const source = new EventSource(`/api/ll/stream/${areaId}`);
         const container = document.querySelector('.message-content');
         container.textContent = '';
 
-        let charQueue = [];
+        let textBuffer = '';
         let typing = false;
-        let charDelay = 0.5; // ms per character — adjust this to control speed
+        let chunkDelay = 25; // ms per chunk — adjust this to control speed
 
-        function typeNextChar() {
-            if (charQueue.length === 0) {
+        function typeNextChunk() {
+            if (textBuffer.length === 0) {
                 typing = false;
                 return;
             }
-            container.textContent += charQueue.shift();
-            setTimeout(typeNextChar, charDelay);
+
+            // Get next chunk (up to next space or 5 characters, whichever comes first)
+            let chunkSize = Math.min(5, textBuffer.length);
+            let spaceIndex = textBuffer.indexOf(' ', 1);
+            if (spaceIndex !== -1 && spaceIndex <= 5) {
+                chunkSize = spaceIndex + 1;
+            }
+
+            const chunk = textBuffer.substring(0, chunkSize);
+            container.textContent += chunk;
+            textBuffer = textBuffer.substring(chunkSize);
+
+            setTimeout(typeNextChunk, chunkDelay);
         }
 
         function enqueueText(text) {
-            for (const ch of text) {
-                charQueue.push(ch);
-            }
+            textBuffer += text;
             if (!typing) {
                 typing = true;
-                typeNextChar();
+                typeNextChunk();
             }
         }
 
@@ -66,8 +87,304 @@
                 source.close();
                 return;
             }
+
+            // Check if this is the route ID message
+            if (event.data.startsWith('ROUTE_ID:')) {
+                correctRouteId = parseInt(event.data.split(':')[1]);
+                console.log('Correct route ID:', correctRouteId);
+                return;
+            }
+
+            // Otherwise, it's text to display
             enqueueText(event.data);
         };
+
+        // Fetch routes when page loads
+        let allRoutes = [];
+        let correctRouteId = null; // Store the correct route ID
+        let correctRoute = null; // Store the full correct route object
+        let guesses = []; // Store all guesses
+        let wrongGuessCount = 0;
+        let hintRequested = false; // Track if hint was already requested
+        const searchInput = document.getElementById('routeSearch');
+        const searchContainer = document.querySelector('.search-container');
+        const searchResultsContainer = document.getElementById('searchResultsContainer');
+        const guessesContainer = document.getElementById('guessesContainer');
+        const guessesList = document.getElementById('guessesList');
+        const areaList = document.querySelector('.area-list');
+        const descriptionBody = document.getElementById('descriptionBody');
+
+        async function loadRoutes() {
+            try {
+                const response = await fetch(`/api/ll/search?area_id=${areaId}`);
+                const routes = await response.json();
+                allRoutes = routes;
+                console.log('Loaded routes:', allRoutes);
+            } catch (error) {
+                console.error('Error loading routes:', error);
+            }
+        }
+
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+
+            // Hide/show appropriate containers
+            if (query.length === 0) {
+                searchResultsContainer.style.display = 'none';
+                guessesContainer.classList.add('active');
+                return;
+            }
+
+            // Show search results, hide guesses
+            searchResultsContainer.style.display = 'block';
+            guessesContainer.classList.remove('active');
+
+            // Filter routes based on search query
+            const filteredRoutes = allRoutes.filter(route =>
+                route.route_name.toLowerCase().includes(query)
+            );
+
+            // Display results
+            displayResults(filteredRoutes);
+        });
+
+        function displayResults(routes) {
+            // Clear previous results
+            areaList.innerHTML = '';
+
+            if (routes.length === 0) {
+                areaList.innerHTML = '<div class="no-results">No routes found</div>';
+                return;
+            }
+
+            // Create container
+            const container = document.createElement('div');
+            container.className = 'routes-container';
+
+            // Add header labels (not in boxes, just text above)
+            const headerLabels = document.createElement('div');
+            headerLabels.className = 'header-labels';
+            headerLabels.innerHTML = `
+                <div class="label-cell">ROUTE NAME</div>
+                <div class="label-cell">GRADE</div>
+                <div class="label-cell">TYPE</div>
+                <div class="label-cell">PITCHES</div>
+                <div class="label-cell">LENGTH</div>
+                <div class="label-cell">PRO</div>
+                <div class="label-cell">AREA</div>
+                <div class="label-cell">CRAG</div>
+            `;
+            container.appendChild(headerLabels);
+
+            // Limit to first 10 routes
+            const limitedRoutes = routes.slice(0, 10);
+
+            // Add route rows
+            limitedRoutes.forEach(route => {
+                const routeRow = document.createElement('div');
+                routeRow.className = 'route-row';
+                routeRow.innerHTML = `
+                    <div class="route-box-cell">${route.route_name}</div>
+                    <div class="route-box-cell">${route.grade || 'N/A'}</div>
+                    <div class="route-box-cell">${route.route_type || 'N/A'}</div>
+                    <div class="route-box-cell">${route.pitches || 'N/A'}</div>
+                    <div class="route-box-cell">${route.length ? route.length + 'ft' : 'N/A'}</div>
+                    <div class="route-box-cell">${route.protection_rating || 'N/A'}</div>
+                    <div class="route-box-cell">${route.main_area || 'N/A'}</div>
+                    <div class="route-box-cell">${route.crag || 'N/A'}</div>
+                `;
+
+                // Click handler to select route
+                routeRow.addEventListener('click', () => {
+                    selectRoute(route);
+                });
+
+                container.appendChild(routeRow);
+            });
+
+            areaList.appendChild(container);
+        }
+
+        function compareRoutes(guessedRoute, correctRoute) {
+            return {
+                route_name: guessedRoute.route_name === correctRoute.route_name,
+                grade: guessedRoute.grade === correctRoute.grade,
+                route_type: guessedRoute.route_type === correctRoute.route_type,
+                pitches: guessedRoute.pitches === correctRoute.pitches,
+                length: guessedRoute.length === correctRoute.length,
+                protection_rating: guessedRoute.protection_rating === correctRoute.protection_rating,
+                main_area: guessedRoute.main_area === correctRoute.main_area,
+                crag: guessedRoute.crag === correctRoute.crag
+            };
+        }
+
+        function displayGuesses() {
+            guessesList.innerHTML = '';
+
+            if (guesses.length === 0) {
+                return;
+            }
+
+            // Create container with headers
+            const container = document.createElement('div');
+            container.className = 'routes-container';
+
+            // Add header labels
+            const headerLabels = document.createElement('div');
+            headerLabels.className = 'header-labels';
+            headerLabels.innerHTML = `
+                <div class="label-cell">ROUTE NAME</div>
+                <div class="label-cell">GRADE</div>
+                <div class="label-cell">TYPE</div>
+                <div class="label-cell">PITCHES</div>
+                <div class="label-cell">LENGTH</div>
+                <div class="label-cell">PRO</div>
+                <div class="label-cell">AREA</div>
+                <div class="label-cell">CRAG</div>
+            `;
+            container.appendChild(headerLabels);
+
+            // Display guesses (newest first)
+            guesses.slice().reverse().forEach(guess => {
+                const routeRow = document.createElement('div');
+                routeRow.className = 'route-row guess-row';
+
+                const route = guess.route;
+                const comparison = guess.comparison;
+
+                routeRow.innerHTML = `
+                    <div class="route-box-cell ${comparison.route_name ? 'correct' : 'incorrect'}">${route.route_name}</div>
+                    <div class="route-box-cell ${comparison.grade ? 'correct' : 'incorrect'}">${route.grade || 'N/A'}</div>
+                    <div class="route-box-cell ${comparison.route_type ? 'correct' : 'incorrect'}">${route.route_type || 'N/A'}</div>
+                    <div class="route-box-cell ${comparison.pitches ? 'correct' : 'incorrect'}">${route.pitches || 'N/A'}</div>
+                    <div class="route-box-cell ${comparison.length ? 'correct' : 'incorrect'}">${route.length ? route.length + 'ft' : 'N/A'}</div>
+                    <div class="route-box-cell ${comparison.protection_rating ? 'correct' : 'incorrect'}">${route.protection_rating || 'N/A'}</div>
+                    <div class="route-box-cell ${comparison.main_area ? 'correct' : 'incorrect'}">${route.main_area || 'N/A'}</div>
+                    <div class="route-box-cell ${comparison.crag ? 'correct' : 'incorrect'}">${route.crag || 'N/A'}</div>
+                `;
+
+                container.appendChild(routeRow);
+            });
+
+            guessesList.appendChild(container);
+        }
+
+        function fetchAdditionalHint() {
+            if (hintRequested) return; // Don't request hint twice
+            hintRequested = true;
+
+            console.log('Fetching additional hint after 3 wrong guesses...');
+
+            // Create new message bubble for hint
+            const hintMessage = document.createElement('div');
+            hintMessage.className = 'description-message';
+            const hintContent = document.createElement('div');
+            hintContent.className = 'message-content gabarito-regular';
+            hintMessage.appendChild(hintContent);
+            descriptionBody.appendChild(hintMessage);
+
+            // Create new EventSource for hint
+            const hintSource = new EventSource(`/api/ll/stream/hint/${areaId}/${correctRouteId}`);
+            let hintTextBuffer = '';
+            let hintTyping = false;
+
+            function typeNextHintChunk() {
+                if (hintTextBuffer.length === 0) {
+                    hintTyping = false;
+                    return;
+                }
+
+                let chunkSize = Math.min(5, hintTextBuffer.length);
+                let spaceIndex = hintTextBuffer.indexOf(' ', 1);
+                if (spaceIndex !== -1 && spaceIndex <= 5) {
+                    chunkSize = spaceIndex + 1;
+                }
+
+                const chunk = hintTextBuffer.substring(0, chunkSize);
+                hintContent.textContent += chunk;
+                hintTextBuffer = hintTextBuffer.substring(chunkSize);
+
+                setTimeout(typeNextHintChunk, chunkDelay);
+            }
+
+            function enqueueHintText(text) {
+                hintTextBuffer += text;
+                if (!hintTyping) {
+                    hintTyping = true;
+                    typeNextHintChunk();
+                }
+            }
+
+            hintSource.onmessage = (event) => {
+                if (event.data === '[DONE]') {
+                    hintSource.close();
+                    return;
+                }
+                enqueueHintText(event.data);
+            };
+
+            hintSource.onerror = (error) => {
+                console.error('Hint stream error:', error);
+                hintSource.close();
+            };
+        }
+
+        function selectRoute(route) {
+            console.log('Selected route:', route);
+
+            // Get the correct route object
+            if (!correctRoute && correctRouteId) {
+                correctRoute = allRoutes.find(r => parseInt(r.route_id) === correctRouteId);
+            }
+
+            if (!correctRoute) {
+                console.error('Correct route not found yet');
+                wrongGuessCount += 1;
+                return;
+            }
+
+            // Compare the guessed route with the correct route
+            const comparison = compareRoutes(route, correctRoute);
+
+            // Add to guesses array
+            guesses.push({
+                route: route,
+                comparison: comparison
+            });
+
+            // Clear search input and hide search results
+            searchInput.value = '';
+            searchResultsContainer.style.display = 'none';
+
+            // Display guesses
+            displayGuesses();
+            guessesContainer.classList.add('active');
+
+            // Check if correct
+            const guessedRouteId = parseInt(route.route_id);
+            if (guessedRouteId === correctRouteId) {
+                console.log('✓ CORRECT! You won!');
+                // Hide the search bar
+                searchContainer.style.display = 'none';
+                // You can add a win modal/message here
+            } else {
+                console.log('✗ Wrong guess. Try again!');
+                wrongGuessCount++;
+
+                // Fetch hint after 3 wrong guesses
+                if (wrongGuessCount === 3) {
+                    fetchAdditionalHint();
+                }
+            }
+        }
+
+        // Call when page loads
+        loadRoutes();
+
+        // Hide containers initially
+        searchResultsContainer.style.display = 'none';
+        guessesContainer.classList.remove('active');
     </script>
 </body>
 </html>

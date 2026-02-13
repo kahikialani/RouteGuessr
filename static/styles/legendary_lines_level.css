@@ -91,16 +91,191 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.typing-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--clr-primary);
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.search-container {
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+    margin: 0 auto;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 100%;
+
+}
+
+.search-input {
+    width: 100%;
+    padding: 18px 24px;
+    background: linear-gradient(145deg, rgba(20, 20, 22, 0.95), rgba(12, 12, 14, 0.98));
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    color: var(--clr-text-white);
+    font-family: "Gabarito", sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    
+}
+
+.search-input::placeholder {
+    color: var(--clr-text-gray);
+}
+
+.search-input:focus {
+    border-color: var(--clr-primary);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.3),
+        0 0 0 3px rgba(255, 107, 53, 0.15);
+}
+
+
 .selection-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 20px auto 0;
+    background: linear-gradient(145deg, rgba(20, 20, 22, 0.95), rgba(12, 12, 14, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.area-list {
+    width: 100%;
+}
+
+.routes-container {
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border: var(--brdr);
-    box-shadow: var(--box-shadow);
-    padding: var(--container-padding);
+    gap: 12px;
+}
+
+.header-labels {
+    display: grid;
+    grid-template-columns: 220px 90px 110px 80px 100px 90px 200px 200px;
+    gap: 8px;
+    padding: 0 0 8px 0;
+    position: sticky;
+    top: -40px;
+    z-index: 10;
+
+}
+
+.label-cell {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    color: var(--clr-text-gray);
+    text-align: center;
+    font-weight: 600;
+}
+
+.route-row {
+    display: grid;
+    grid-template-columns: 220px 90px 110px 80px 100px 90px 200px 200px;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.route-box-cell {
+    background: linear-gradient(145deg, rgba(30, 30, 35, 0.9), rgba(20, 20, 25, 0.95));
+    border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    padding: 14px 12px;
+    font-family: "Gabarito", sans-serif;
+    font-size: 0.9rem;
+    color: var(--clr-text-white);
+    text-align: center;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+.route-box-cell:first-child,
+.route-box-cell:nth-child(7),
+.route-box-cell:nth-child(8) {
+    /* Route name, area, and crag - allow text wrapping */
+    white-space: normal;
+    line-height: 1.3;
+}
+
+.route-row:hover .route-box-cell {
+    border-color: var(--clr-primary);
+    background: linear-gradient(145deg, rgba(40, 40, 45, 0.95), rgba(30, 30, 35, 0.98));
+    box-shadow: 0 3px 12px rgba(255, 107, 53, 0.3);
+}
+
+.route-box-cell:first-child {
+    font-weight: 600;
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px;
+    color: var(--clr-text-gray);
+    font-family: "Gabarito", sans-serif;
+}
+
+/* Guesses container */
+.guesses-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 20px auto 0;
+    display: none;
+}
+
+.guesses-container.active {
+    display: block;
+}
+
+.guesses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Correct/Incorrect states */
+.route-box-cell.correct {
+    background: linear-gradient(145deg, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.95)) !important;
+    border-color: rgba(34, 197, 94, 0.5) !important;
+}
+
+.route-box-cell.incorrect {
+    background: linear-gradient(145deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.95)) !important;
+    border-color: rgba(239, 68, 68, 0.5) !important;
+}
+
+.route-row.guess-row {
+    cursor: default;
+}
+
+.route-row.guess-row:hover .route-box-cell {
+    border-color: inherit;
+    background: inherit;
+    box-shadow: inherit;
 }

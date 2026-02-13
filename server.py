@@ -374,8 +374,7 @@ def generate_legendary_lines(area_id):
     logging.debug(f"route: {route.route_name}")
 
     chosen_route_id = route.route_id
-    yield f"data: ROUTE_ID:{chosen_route_id}\n\n"
-    comments = MpComments.query.filter_by(route_id=chosen_route_id).limit(5).all()
+    comments = MpComments.query.filter_by(route_id=chosen_route_id).limit(10).all()
     logging.debug(f"comments: {comments}")
 
     route_name = route.route_name
@@ -386,10 +385,11 @@ def generate_legendary_lines(area_id):
     sub_area = route.main_area
     comment_string = ""
     main_area = "Joshua Tree National Park"
+    yield f"data: ROUTE_ID:{chosen_route_id}\n\n"
     for comment in comments:
         comment_string += f"{comment.comment_text}"
 
-    prompt = f"The Route is {route_name}, {route_grade}, {length}ft long, at the crag {crag} in sub area of {sub_area}, in {main_area}. Description: {description_string}. Five user comments: {comment_string}."
+    prompt = f"The Route is {route_name}, {route_grade}, {length}ft long, at the crag {crag} in sub area of {sub_area}, in {main_area}. Description: {description_string}. User comments: {comment_string}."
 
     logging.debug(f"prompt: {prompt}")
 
@@ -411,7 +411,61 @@ def generate_legendary_lines(area_id):
             thinking_budget=0,
         ),
         system_instruction=[
-            types.Part.from_text(text="""Provide a sentenced, detailed summary of a rock climbing route based on a route's description and comments. Users are meant to guess which route the generated description is about. Do not include overly specific details to give this away (exact route name, exact crag name, exact difficulty, exact length), but hints towards those aspects is acceptable. Sub-area can occasionally be specified. Main area is already known by user. Naming conventions: cracks should be called cracks, refer to the climb as either a route or a boulder. Difficulty, 5.0 - 5.6 are easy. 5.7 - 5.10(a, b, c, and d) are moderate, 5.11a - 5.12a are hard, and 5.12b and higher are considered testpieces."""),
+            types.Part.from_text(text="""Formulate a four sentence summary of a climbing route given it's description and user comments. The summary should be detailed enough to allow someone to guess the route given a list of possible routes. Leave out any super specific information about the location, name, or type of anchor of the route."""),
+            types.Part.from_text(text="""Provide four sentenced, detailed summary of a rock climbing route based on a route's description and comments. The summary should be detailed enough about the routes physical description to allow someone to guess the route given a list of possible routes. Do not include overly specific details to give this away (exact route name, exact crag name, exact difficulty, exact length), but hints towards those aspects is acceptable. Sub-area can occasionally be specified. Main area is already known by user. Naming conventions: cracks should be called cracks, refer to the climb as either a route or a boulder. Difficulty, 5.0 - 5.5 are called low-fifth class, 5.6-5.9 are called easy routes, - 5.10(a, b, c, and d) are moderate, 5.11a - 5.12a are hard, and 5.12b and higher are considered testpieces."""),
+        ],
+    )
+
+    for chunk in client.models.generate_content_stream(
+            model=model,
+            contents=contents,
+            config=generate_content_config,
+    ):
+        yield f"data: {chunk.text}\n\n"
+    yield "data: [DONE]\n\n"
+
+def generate_legendary_lines_hint(route_id):
+    from google import genai
+    from google.genai import types
+
+    route = MpDescriptions.query.filter_by(route_id=route_id).first()
+    comments = MpComments.query.filter_by(route_id=route_id).limit(10).all()
+
+    route_name = route.route_name
+    description_string = route.description
+    route_grade = route.grade
+    length = route.length
+    crag = route.crag
+    sub_area = route.main_area
+    comment_string = ""
+    main_area = "Joshua Tree National Park"
+    yield f"data: ROUTE_ID:{route_id}\n\n"
+    for comment in comments:
+        comment_string += f"{comment.comment_text}"
+
+    prompt = f"The Route is {route_name}, {route_grade}, {length}ft long, at the crag {crag} in sub area of {sub_area}, in {main_area}. Description: {description_string}. User comments: {comment_string}."
+
+    logging.debug(f"prompt: {prompt}")
+
+    client = genai.Client(
+        api_key=os.getenv("GEMINI_API_KEY"),
+    )
+
+    model = "gemini-flash-lite-latest"
+    contents = [
+        types.Content(
+            role="user",
+            parts=[
+                types.Part.from_text(text=prompt),
+            ],
+        ),
+    ]
+    generate_content_config = types.GenerateContentConfig(
+        thinking_config=types.ThinkingConfig(
+            thinking_budget=0,
+        ),
+        system_instruction=[
+            types.Part.from_text(text="""Formulate a three sentence specific summary of a climbing route given it's description and user comments. The summary should be detailed but leave out any super specific information about the location, exact grade, or exact name."""),
         ],
     )
 
@@ -960,38 +1014,6 @@ def legendary_lines_select():
 def legendary_lines_level(area_id):
     return render_template("legendary_lines_level.html", area_id=area_id)
 
-@app.route("/legendary-lines/stream/<area_id>")
-def legendary_lines_stream(area_id):
-    from flask import stream_with_context, Response
-    return Response(stream_with_context(generate_legendary_lines(area_id)), mimetype='text/event-stream')
-    #return 'debug'
-
-
-
-
-@app.route("/api/ll/search")
-def search_routes():
-    area_id = request.args.get('area_id', default=0, type=int)
-    top_climbs = MpDescriptions.query.filter_by(area_id=area_id).all()
-
-    # Debug: find the problematic route
-    results = []
-    for i, route in enumerate(top_climbs):
-        try:
-            d = route.to_dict()
-            # Test if it's JSON serializable
-            import json
-            json.dumps(d)
-            results.append(d)
-        except Exception as e:
-            print(f"Problem with route {i}: {route.route_name}")
-            print(f"Error: {e}")
-            print(f"Data: {route.__dict__}")
-
-    return jsonify(results)
-
-
-
 ''''@app.route("/api/legendary-lines/routes")
 def legendary_lines_routes():
     """Return route data for the legendary lines search feature"""
@@ -1149,6 +1171,39 @@ def submit_level():
         'distance': distance,
         'total_score': attempt.total_score
     })
+
+@app.route("/api/ll/stream/<area_id>")
+def legendary_lines_stream(area_id):
+    from flask import stream_with_context, Response
+    return Response(stream_with_context(generate_legendary_lines(area_id)), mimetype='text/event-stream')
+    return 'debug'
+
+@app.route("/api/ll/stream/hint/<area_id>/<route_id>")
+def legendary_lines_stream_hint(area_id, route_id):
+    from flask import stream_with_context, Response
+    return Response(stream_with_context(generate_legendary_lines_hint(route_id)), mimetype='text/event-stream')
+    return 'debug'
+
+@app.route("/api/ll/search")
+def search_routes():
+    area_id = request.args.get('area_id', default=0, type=int)
+    top_climbs = MpDescriptions.query.filter_by(area_id=area_id).all()
+
+    # Debug: find the problematic route
+    results = []
+    for i, route in enumerate(top_climbs):
+        try:
+            d = route.to_dict()
+            # Test if it's JSON serializable
+            import json
+            json.dumps(d)
+            results.append(d)
+        except Exception as e:
+            print(f"Problem with route {i}: {route.route_name}")
+            print(f"Error: {e}")
+            print(f"Data: {route.__dict__}")
+
+    return jsonify(results)
 
 # ======================= GOOGLE AUTHENTICATION =======================
 @app.route("/login")
