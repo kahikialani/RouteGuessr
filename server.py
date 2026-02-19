@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import joinedload
+from sqlalchemy import func
 from sqlalchemy.ext.mutable import MutableList
 from datetime import date, datetime
 import os
@@ -216,6 +216,17 @@ class MpComments(db.Model):
 
     route = db.relationship('ClimbingRoute')
 
+class LLMDescriptions(db.Model):
+    __tablename__ = 'llm_descriptions'
+    id = db.Column(db.Integer, primary_key=True)
+    route_id = db.Column(db.Integer, db.ForeignKey('climbing_routes.id'), nullable=False)
+    description = db.Column(db.Text)
+    hint = db.Column(db.Text)
+    is_daily = db.Column(db.Boolean)
+    date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    route = db.relationship('ClimbingRoute')
+
 class Calculations:
     def __init__(self):
         self.user_data = {
@@ -368,13 +379,14 @@ def generate_legendary_lines(area_id):
     from random import choice
     from google import genai
     from google.genai import types
+    from google.api_core.exceptions import ResourceExhausted
 
     all_routes_in_area = MpDescriptions.query.filter_by(area_id=area_id).all()
     route = choice(all_routes_in_area)
     logging.debug(f"route: {route.route_name}")
 
     chosen_route_id = route.route_id
-    comments = MpComments.query.filter_by(route_id=chosen_route_id).limit(10).all()
+    comments = MpComments.query.filter_by(route_id=chosen_route_id).order_by(func.random()).limit(5).all()
     logging.debug(f"comments: {comments}")
 
     route_name = route.route_name
@@ -384,98 +396,98 @@ def generate_legendary_lines(area_id):
     crag = route.crag
     sub_area = route.main_area
     comment_string = ""
-    main_area = "Joshua Tree National Park"
+    main_area = "Joshua Tree National Park" # TODO
     yield f"data: ROUTE_ID:{chosen_route_id}\n\n"
     for comment in comments:
         comment_string += f"{comment.comment_text}"
 
     prompt = f"The Route is {route_name}, {route_grade}, {length}ft long, at the crag {crag} in sub area of {sub_area}, in {main_area}. Description: {description_string}. User comments: {comment_string}."
+    output_desc = ""
+    output_hint = ""
 
-    logging.debug(f"prompt: {prompt}")
+    generate_content = True
+    if generate_content:
+        try:
+            client = genai.Client(
+                api_key=os.getenv("GEMINI_API_KEY"),
+            )
 
-    client = genai.Client(
-        api_key=os.getenv("GEMINI_API_KEY"),
-    )
+            model = "gemini-flash-lite-latest"
+            contents = [
+                types.Content(
+                    role="user",
+                    parts=[
+                        types.Part.from_text(text=prompt),
+                    ],
+                ),
+            ]
+            generate_content_config = types.GenerateContentConfig(
+                thinking_config=types.ThinkingConfig(
+                    thinking_budget=0,
+                ),
+                system_instruction=[
+                    #types.Part.from_text(text="""Formulate a four sentence summary of a climbing route given it's description and user comments. The summary should be detailed enough to allow someone to guess the route given a list of possible routes. Leave out any super specific information about the location, name, or type of anchor of the route."""),
+                    types.Part.from_text(text="""Provide four sentenced, detailed summary of a rock climbing route based on a route's description and comments. The summary should be detailed enough about the routes physical description to allow someone to guess the route given a list of possible routes. Do not include overly specific details to give this away (exact route name, exact crag name, exact difficulty, exact length), but hints towards those aspects is acceptable. Sub-area can occasionally be specified. Main area is already known by user. Naming conventions: cracks should be called cracks, refer to the climb as either a route or a boulder. Difficulty, 5.0 - 5.5 are called low-fifth class, 5.6-5.9 are called easy routes, - 5.10(a, b, c, and d) are moderate, 5.11a - 5.12a are hard, and 5.12b and higher are considered testpieces."""),
+                ],
+            )
 
-    model = "gemini-flash-lite-latest"
-    contents = [
-        types.Content(
-            role="user",
-            parts=[
-                types.Part.from_text(text=prompt),
-            ],
-        ),
-    ]
-    generate_content_config = types.GenerateContentConfig(
-        thinking_config=types.ThinkingConfig(
-            thinking_budget=0,
-        ),
-        system_instruction=[
-            types.Part.from_text(text="""Formulate a four sentence summary of a climbing route given it's description and user comments. The summary should be detailed enough to allow someone to guess the route given a list of possible routes. Leave out any super specific information about the location, name, or type of anchor of the route."""),
-            types.Part.from_text(text="""Provide four sentenced, detailed summary of a rock climbing route based on a route's description and comments. The summary should be detailed enough about the routes physical description to allow someone to guess the route given a list of possible routes. Do not include overly specific details to give this away (exact route name, exact crag name, exact difficulty, exact length), but hints towards those aspects is acceptable. Sub-area can occasionally be specified. Main area is already known by user. Naming conventions: cracks should be called cracks, refer to the climb as either a route or a boulder. Difficulty, 5.0 - 5.5 are called low-fifth class, 5.6-5.9 are called easy routes, - 5.10(a, b, c, and d) are moderate, 5.11a - 5.12a are hard, and 5.12b and higher are considered testpieces."""),
-        ],
-    )
+            for chunk in client.models.generate_content_stream(
+                    model=model,
+                    contents=contents,
+                    config=generate_content_config,
+            ):
+                output_desc += chunk.text
+                yield f"data: {chunk.text}\n\n"
+            yield "data: [DONE]\n\n"
 
-    for chunk in client.models.generate_content_stream(
-            model=model,
-            contents=contents,
-            config=generate_content_config,
-    ):
-        yield f"data: {chunk.text}\n\n"
-    yield "data: [DONE]\n\n"
+            # Begin generating hint
 
-def generate_legendary_lines_hint(route_id):
-    from google import genai
-    from google.genai import types
+            contents = [
+                types.Content(
+                    role="user",
+                    parts=[
+                        types.Part.from_text(text="Your previous summary" + output_desc + "And the original data: " + prompt),
+                    ],
+                ),
+            ]
+            generate_content_config = types.GenerateContentConfig(
+                thinking_config=types.ThinkingConfig(
+                    thinking_budget=0,
+                ),
+                system_instruction=[
 
-    route = MpDescriptions.query.filter_by(route_id=route_id).first()
-    comments = MpComments.query.filter_by(route_id=route_id).limit(10).all()
+                    types.Part.from_text(text="""Add an additional 3 sentences to continue a summary of a climbing route. Your addition should be more detailed than the initial you've already given, but still leave out super specific details. Summary: {prior_summary_instruction}."""),
+                ],
+            )
+            for chunk in client.models.generate_content_stream(
+                    model=model,
+                    contents=contents,
+                    config=generate_content_config,
+            ):
+                output_hint += chunk.text
+                yield f"data: [HINT]:{chunk.text}\n\n"
+            yield f"data: [HINT_DONE]\n\n"
+        except ResourceExhausted as err:
+            logging.debug(f"ResourceExhausted {err}")
+        logging.debug(f"output_desc: {output_desc}")
+        logging.debug(f"output_hint: {output_hint}")
 
-    route_name = route.route_name
-    description_string = route.description
-    route_grade = route.grade
-    length = route.length
-    crag = route.crag
-    sub_area = route.main_area
-    comment_string = ""
-    main_area = "Joshua Tree National Park"
-    yield f"data: ROUTE_ID:{route_id}\n\n"
-    for comment in comments:
-        comment_string += f"{comment.comment_text}"
+        try:
+            new_summary = LLMDescriptions(
+                route_id=chosen_route_id,
+                description=output_desc,
+                hint=output_hint,
+                is_daily=False)
+            db.session.add(new_summary)
+            db.session.commit()
+        except Exception as err:
+            db.session.rollback()
+            raise err
 
-    prompt = f"The Route is {route_name}, {route_grade}, {length}ft long, at the crag {crag} in sub area of {sub_area}, in {main_area}. Description: {description_string}. User comments: {comment_string}."
+    else:
+        yield f"data: {prompt}\n\n"
+        yield "data: [DONE]\n\n"
 
-    logging.debug(f"prompt: {prompt}")
-
-    client = genai.Client(
-        api_key=os.getenv("GEMINI_API_KEY"),
-    )
-
-    model = "gemini-flash-lite-latest"
-    contents = [
-        types.Content(
-            role="user",
-            parts=[
-                types.Part.from_text(text=prompt),
-            ],
-        ),
-    ]
-    generate_content_config = types.GenerateContentConfig(
-        thinking_config=types.ThinkingConfig(
-            thinking_budget=0,
-        ),
-        system_instruction=[
-            types.Part.from_text(text="""Formulate a three sentence specific summary of a climbing route given it's description and user comments. The summary should be detailed but leave out any super specific information about the location, exact grade, or exact name."""),
-        ],
-    )
-
-    for chunk in client.models.generate_content_stream(
-            model=model,
-            contents=contents,
-            config=generate_content_config,
-    ):
-        yield f"data: {chunk.text}\n\n"
-    yield "data: [DONE]\n\n"
 
 
 # ======================= FLASK DECORATORS =======================
@@ -1014,37 +1026,6 @@ def legendary_lines_select():
 def legendary_lines_level(area_id):
     return render_template("legendary_lines_level.html", area_id=area_id)
 
-''''@app.route("/api/legendary-lines/routes")
-def legendary_lines_routes():
-    """Return route data for the legendary lines search feature"""
-    import csv
-    routes = []
-    csv_path = os.path.join(os.path.dirname(__file__), 'legendary_lines', 'data_collection', 'route-finder.csv')
-
-    try:
-        with open(csv_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                routes.append({
-                    'name': row.get('Route', ''),
-                    'location': row.get('Location', ''),
-                    'url': row.get('URL', ''),
-                    'grade': row.get('Rating', ''),
-                    'type': row.get('Route Type', ''),
-                    'pitches': int(row.get('Pitches', 0)) if row.get('Pitches', '').isdigit() else None,
-                    'length': f"{row.get('Length', '')}ft" if row.get('Length', '').isdigit() else row.get('Length', ''),
-                    'stars': float(row.get('Avg Stars', 0)) if row.get('Avg Stars', '') else None,
-                    'image': None  # Images would need to be fetched separately
-                })
-    except FileNotFoundError:
-        logging.error(f"Route CSV file not found at {csv_path}")
-        return jsonify([])
-    except Exception as e:
-        logging.error(f"Error reading route CSV: {e}")
-        return jsonify([])
-
-    return jsonify(routes)'''
-
 
 # ======================= APIs =======================
 @app.route("/api/submit-free-play", methods=["POST"])
@@ -1178,11 +1159,6 @@ def legendary_lines_stream(area_id):
     return Response(stream_with_context(generate_legendary_lines(area_id)), mimetype='text/event-stream')
     return 'debug'
 
-@app.route("/api/ll/stream/hint/<area_id>/<route_id>")
-def legendary_lines_stream_hint(area_id, route_id):
-    from flask import stream_with_context, Response
-    return Response(stream_with_context(generate_legendary_lines_hint(route_id)), mimetype='text/event-stream')
-    return 'debug'
 
 @app.route("/api/ll/search")
 def search_routes():
