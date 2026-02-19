@@ -6,6 +6,7 @@ import re
 import psycopg2
 import sqlite3
 from dotenv import load_dotenv
+import os
 
 class DataConstructor:
     def __init__(self, use_local = True, local_db_path = 'RouteGuessrDB.db', db_connection_string = '', url = 'https://www.mountainproject.com/area/105720495/joshua-tree-national-park'):
@@ -105,7 +106,6 @@ class DataConstructor:
                 area_link TEXT NOT NULL UNIQUE,
                 area_lat FLOAT NOT NULL,
                 area_lon FLOAT NOT NULL,
-                total_routes INTEGER NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
             );
             """
@@ -449,7 +449,7 @@ class DataConstructor:
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     load_dotenv()
-    neon_connection = None#os.getenv("NEON_KEY")
+    neon_connection = os.getenv("NEON_URL")
     location_url = input('Input MP link:')
     local = input("Enter 'True' or 'False' for local env: ").lower()
     if local == 'true':
